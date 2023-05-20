@@ -24,7 +24,7 @@
 
 import imp
 
-from snakem.role import client
+from snakem.net import client
 
 if __name__ == '__main__':
     # run set_path() from other script without .py extension

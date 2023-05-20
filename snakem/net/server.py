@@ -27,7 +27,7 @@ import sys
 from ..config import server as cfg
 
 from ..game import game
-from ..net import net
+from . import net
 from ..test import debug
 from ..enums import GameState, MsgType
 

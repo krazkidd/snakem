@@ -28,7 +28,7 @@ import curses.ascii
 from ..config import client as cfg
 
 from ..game import display, game
-from ..net import net
+from . import net
 from ..test import debug
 from ..enums import GameState, MsgType, Dir
 
