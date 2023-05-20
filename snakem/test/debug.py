@@ -24,48 +24,48 @@
 import datetime
 import sys
 
-from snakem.enums import MsgType
+from ..enums import MsgType
 
-name = 'None'
+_name = 'None'
 
-doPrintDebug = False
-doPrintError = False
-doPrintNetMsg = False
+DO_PRINT_DEBUG = False
+DO_PRINT_ERROR = False
+DO_PRINT_NET_MSG = False
 
-def init_debug(nm, debug, error, netMsg):
-    global name, doPrintDebug, doPrintError, doPrintNetMsg
+def init_debug(name, debug, error, net_msg):
+    global _name, DO_PRINT_DEBUG, DO_PRINT_ERROR, DO_PRINT_NET_MSG
 
-    name = str(nm)
-    doPrintDebug = debug
-    doPrintError = error
-    doPrintNetMsg = netMsg
+    _name = str(name)
+    DO_PRINT_DEBUG = debug
+    DO_PRINT_ERROR = error
+    DO_PRINT_NET_MSG = net_msg
 
 def print_debug(msg):
-    if doPrintDebug:
-        print 'DEBUG (' + datetime.datetime.now().strftime("%H:%M:%S") + ') ' + name + ': ' + str(msg)
+    if DO_PRINT_DEBUG:
+        print(f'DEBUG ({datetime.datetime.now().strftime("%H:%M:%S")}) {_name}: {msg}')
 
 def print_err(msg):
-    if doPrintError:
-        print 'ERROR (' + datetime.datetime.now().strftime("%H:%M:%S") + ') ' + name + ' (line ' + str(sys.exc_info()[-1].tb_lineno) + '): ' + str(msg)
+    if DO_PRINT_ERROR:
+        print(f'ERROR ({datetime.datetime.now().strftime("%H:%M:%S")}) {_name} (line {sys.exc_info()[-1].tb_lineno}): {msg}')
 
-def get_net_msg(address, toOrFromStr, msgType, msgBody=None, addlInfo=None):
-    if msgBody:
-        bodyLength = str(len(msgBody))
+def get_net_msg(address, to_or_from_str, msg_type, msg_body=None, addl_info=None):
+    if msg_body:
+        body_length = str(len(msg_body))
     else:
-        bodyLength = '0'
+        body_length = '0'
 
-    #TODO find out if addlInfo, as a reference, is being changed after function returns
-    if addlInfo and  len(addlInfo) > 0:
-        addlInfo = ' ' + addlInfo
+    #TODO find out if addl_info, as a reference, is being changed after function returns
+    if addl_info and  len(addl_info) > 0:
+        addl_info = ' ' + addl_info
     else:
-        addlInfo = ''
+        addl_info = ''
 
-    return 'NETMSG (' + toOrFromStr + ' ' + address[0] + ') ' + name + ': <' + MsgType.GetName(msgType) + ', length ' + bodyLength + '>' + addlInfo
+    return f'NETMSG ({to_or_from_str} {address[0]}) {_name}: <{MsgType.get_name(msg_type)}, length {body_length}> {addl_info}'
 
-def print_net_msg_sent(address, msgType, msgBody=None, addlInfo=None):
-    if doPrintNetMsg:
-        print get_net_msg(address, 'to', msgType, msgBody, addlInfo)
+def print_net_msg_sent(address, msg_type, msg_body=None, addl_info=None):
+    if DO_PRINT_NET_MSG:
+        print(get_net_msg(address, 'to', msg_type, msg_body, addl_info))
 
-def print_net_msg_received(address, msgType, msgBody=None, addlInfo=None):
-    if doPrintNetMsg:
-        print get_net_msg(address, 'from', msgType, msgBody, addlInfo)
+def print_net_msg_received(address, msg_type, msg_body=None, addl_info=None):
+    if DO_PRINT_NET_MSG:
+        print(get_net_msg(address, 'from', msg_type, msg_body, addl_info))

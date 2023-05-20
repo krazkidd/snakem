@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 # *************************************************************************
@@ -26,12 +26,14 @@ import sys
 import os
 import os.path
 
+from snakem.role import server
+
 def set_path():
     """Add snakem package to sys.path the gPodder way.
 
     Source: https://stackoverflow.com/q/3281495
     """
-    
+
     my_path = os.path.realpath(sys.argv[0])
     my_dir = os.path.join(os.path.dirname(my_path), '..')
     prefix = os.path.abspath(os.path.normpath(my_dir))
@@ -44,7 +46,5 @@ def set_path():
 
 if __name__ == '__main__':
     set_path()
-
-    from snakem.role import server
 
     server.MainServer().start()
