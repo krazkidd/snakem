@@ -66,34 +66,34 @@ class MsgType:
        READY, NOT_READY, START, END, SNAKE_UPDATE, CHAT, SETUP, INPUT = range(15)
 
     @staticmethod
-    def GetName(msgType):
-        if msgType == MsgType.NONE:
+    def get_name(msg_type):
+        if msg_type == MsgType.NONE:
             return "NONE"
-        elif msgType == MsgType.HELLO:
+        elif msg_type == MsgType.HELLO:
             return "HELLO"
-        elif msgType == MsgType.MOTD:
+        elif msg_type == MsgType.MOTD:
             return "MOTD"
-        elif msgType == MsgType.LOBBY_REQ:
+        elif msg_type == MsgType.LOBBY_REQ:
             return "LOBBY_REQ"
-        elif msgType == MsgType.LOBBY_REP:
+        elif msg_type == MsgType.LOBBY_REP:
             return "LOBBY_REP"
-        elif msgType == MsgType.LOBBY_JOIN:
+        elif msg_type == MsgType.LOBBY_JOIN:
             return "LOBBY_JOIN"
-        elif msgType == MsgType.LOBBY_QUIT:
+        elif msg_type == MsgType.LOBBY_QUIT:
             return "LOBBY_QUIT"
-        elif msgType == MsgType.READY:
+        elif msg_type == MsgType.READY:
             return "READY"
-        elif msgType == MsgType.NOT_READY:
+        elif msg_type == MsgType.NOT_READY:
             return "NOT_READY"
-        elif msgType == MsgType.START:
+        elif msg_type == MsgType.START:
             return "START"
-        elif msgType == MsgType.END:
+        elif msg_type == MsgType.END:
             return "END"
-        elif msgType == MsgType.SNAKE_UPDATE:
+        elif msg_type == MsgType.SNAKE_UPDATE:
             return "SNAKE_UPDATE"
-        elif msgType == MsgType.CHAT:
+        elif msg_type == MsgType.CHAT:
             return "CHAT"
-        elif msgType == MsgType.SETUP:
+        elif msg_type == MsgType.SETUP:
             return "SETUP"
-        elif msgType == MsgType.INPUT:
+        elif msg_type == MsgType.INPUT:
             return "INPUT"

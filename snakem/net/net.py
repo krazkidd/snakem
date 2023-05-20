@@ -28,143 +28,143 @@ from struct import pack
 from struct import unpack
 from struct import calcsize
 
-from snakem.test import debug
-from snakem.enums import *
+from ..test import debug
+from ..enums import MsgType, MsgFmt
 
 MAX_MSG_SIZE = 1024
 
 # how long to wait for an input event
 TIMEOUT = 0.005
 
-sock = None
+_sock = None
 
-def InitServerSocket(addr):
-    global sock
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.bind(addr)
+def init_server_socket(addr):
+    global _sock
+    _sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    _sock.bind(addr)
 
-    return sock.getsockname()[1] # return port
+    return _sock.getsockname()[1] # return port
 
-def InitClientSocket():
-    global sock
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+def init_client_socket():
+    global _sock
+    _sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-def CloseSocket():
-    if sock:
-        sock.close()
+def close_socket():
+    if _sock:
+        _sock.close()
 
-def WaitForInput(netCallback, keyboardCallback=None, doBlock=True):
-    if doBlock:
+def wait_for_input(net_callback, keyboard_callback=None, do_block=True):
+    if do_block:
         # we block on this call so we're not wasting cycles outside of an active game
-        readable, writable, exceptional = select.select([sock, sys.stdin], [], [])
+        readable, writable, exceptional = select.select([_sock, sys.stdin], [], [])
     else:
-        readable, writable, exceptional = select.select([sock, sys.stdin], [], [], TIMEOUT)
+        readable, writable, exceptional = select.select([_sock, sys.stdin], [], [], TIMEOUT)
 
-    if keyboardCallback is not None and sys.stdin in readable:
-        keyboardCallback()
-    elif netCallback is not None and sock in readable:
-        address, msgType, msgBody = ReceiveMessage()
-        netCallback(address, msgType, msgBody)
+    if keyboard_callback is not None and sys.stdin in readable:
+        keyboard_callback()
+    elif net_callback is not None and _sock in readable:
+        address, msg_type, msg_body = receive_message()
+        net_callback(address, msg_type, msg_body)
 
-def SendMessage(address, msgType, msgBody=None):
-    if msgBody:
-        buf = pack(MsgFmt.HDR, msgType, calcsize(MsgFmt.HDR) + len(msgBody))
-        buf += msgBody
+def send_message(address, msg_type, msg_body=None):
+    if msg_body:
+        buf = pack(MsgFmt.HDR, msg_type, calcsize(MsgFmt.HDR) + len(msg_body))
+        buf += msg_body
     else:
-        buf = pack(MsgFmt.HDR, msgType, calcsize(MsgFmt.HDR))
+        buf = pack(MsgFmt.HDR, msg_type, calcsize(MsgFmt.HDR))
 
-    debug.print_net_msg_sent(address, msgType, msgBody, GetAddlInfoForDebug(msgType, msgBody))
+    debug.print_net_msg_sent(address, msg_type, msg_body, get_addl_info_for_debug(msg_type, msg_body))
 
-    sock.sendto(buf, address)
+    _sock.sendto(buf, address)
 
-def ReceiveMessage():
-    msg, address = sock.recvfrom(MAX_MSG_SIZE)
-    msgType, msgLen = unpack(MsgFmt.HDR, msg[:calcsize(MsgFmt.HDR)])
+def receive_message():
+    msg, address = _sock.recvfrom(MAX_MSG_SIZE)
+    msg_type, msg_len = unpack(MsgFmt.HDR, msg[:calcsize(MsgFmt.HDR)])
 
     #TODO verify msg size!
     if len(msg) > calcsize(MsgFmt.HDR):
-        msgBody = msg[calcsize(MsgFmt.HDR):]
+        msg_body = msg[calcsize(MsgFmt.HDR):]
     else:
-        msgBody = None
+        msg_body = None
 
-    debug.print_net_msg_received(address, msgType, msgBody, GetAddlInfoForDebug(msgType, msgBody))
+    debug.print_net_msg_received(address, msg_type, msg_body, get_addl_info_for_debug(msg_type, msg_body))
 
-    return address, msgType, msgBody
+    return address, msg_type, msg_body
 
-def GetAddlInfoForDebug(msgType, msgBody):
-    if msgType == MsgType.SNAKE_UPDATE:
-        tick, id, heading, isAlive, body = UnpackSnakeUpdate(msgBody)
-        x, y = body[0]
-        return '(' + str(x) + ', ' + str(y) + ')'
+def get_addl_info_for_debug(msg_type, msg_body):
+    if msg_type == MsgType.SNAKE_UPDATE:
+        tick, snake_id, heading, is_alive, body = unpack_snake_update(msg_body)
+        x_pos, y_pos = body[0]
+        return '(' + str(x_pos) + ', ' + str(y_pos) + ')'
 
     return None
 
-def SendHelloMessage(address):
-    SendMessage(address, MsgType.HELLO)
+def send_hello_message(address):
+    send_message(address, MsgType.HELLO)
 
-def SendMOTD(address, motd):
-    SendMessage(address, MsgType.MOTD, motd)
+def send_motd(address, motd):
+    send_message(address, MsgType.MOTD, motd)
 
-def SendQuitMessage(address):
-    SendMessage(address, MsgType.LOBBY_QUIT)
+def send_quit_message(address):
+    send_message(address, MsgType.LOBBY_QUIT)
 
-def SendLobbyListRequest(address):
-    SendMessage(address, MsgType.LOBBY_REQ)
+def send_lobby_list_request(address):
+    send_message(address, MsgType.LOBBY_REQ)
 
-def SendLobbyList(address, lobbies):
+def send_lobby_list(address, lobbies):
     buf = pack(MsgFmt.LBY_CNT, len(lobbies))
     for lobby in lobbies:
-        buf += pack(MsgFmt.LBY, lobby.lobbyNum, lobby.connectPort)
+        buf += pack(MsgFmt.LBY, lobby.lobby_num, lobby.connect_port)
 
-    SendMessage(address, MsgType.LOBBY_REP, buf)
+    send_message(address, MsgType.LOBBY_REP, buf)
 
-def UnpackLobbyList(msgBody):
-    lobbyCount = unpack(MsgFmt.LBY_CNT, msgBody[:calcsize(MsgFmt.LBY_CNT)])[0]
-    packedLobbies = msgBody[calcsize(MsgFmt.LBY_CNT):]
+def unpack_lobby_list(msg_body):
+    lobby_count = unpack(MsgFmt.LBY_CNT, msg_body[:calcsize(MsgFmt.LBY_CNT)])[0]
+    packed_lobbies = msg_body[calcsize(MsgFmt.LBY_CNT):]
 
-    lobbyList = []
+    lobby_list = []
     size = calcsize(MsgFmt.LBY)
-    for i in range(lobbyCount):
-        lobbyList.append(unpack(MsgFmt.LBY, packedLobbies[i * size:(i + 1) * size]))
+    for i in range(lobby_count):
+        lobby_list.append(unpack(MsgFmt.LBY, packed_lobbies[i * size:(i + 1) * size]))
 
-    return lobbyList
+    return lobby_list
 
-def SendSnakeUpdate(address, tick, id, snake):
+def send_snake_update(address, tick, snake_id, snake):
     #TODO don't exceed MAX_MSG_SIZE (without breaking the game--allow splitting an update or increase MAX_MSG_SIZE)
-    buf = pack(MsgFmt.SNAKE_UPDATE_HDR, tick, id, snake.heading, snake.isAlive, len(snake.body))
+    buf = pack(MsgFmt.SNAKE_UPDATE_HDR, tick, snake_id, snake.heading, snake.isAlive, len(snake.body))
     for pos in snake.body:
         buf += pack(MsgFmt.SNAKE_UPDATE_BDY, pos[0], pos[1])
 
-    SendMessage(address, MsgType.SNAKE_UPDATE, buf)
+    send_message(address, MsgType.SNAKE_UPDATE, buf)
 
-def UnpackSnakeUpdate(msgBody):
-    tick, id, heading, isAlive, length = unpack(MsgFmt.SNAKE_UPDATE_HDR, msgBody[:calcsize(MsgFmt.SNAKE_UPDATE_HDR)])
-    bodyBuf = msgBody[calcsize(MsgFmt.SNAKE_UPDATE_HDR):]
+def unpack_snake_update(msg_body):
+    tick, snake_id, heading, is_alive, length = unpack(MsgFmt.SNAKE_UPDATE_HDR, msg_body[:calcsize(MsgFmt.SNAKE_UPDATE_HDR)])
+    body_buf = msg_body[calcsize(MsgFmt.SNAKE_UPDATE_HDR):]
 
     body = list()
     size = calcsize(MsgFmt.SNAKE_UPDATE_BDY)
     for i in range(length):
-        body.append(unpack(MsgFmt.SNAKE_UPDATE_BDY, bodyBuf[i * size:(i + 1) * size]))
+        body.append(unpack(MsgFmt.SNAKE_UPDATE_BDY, body_buf[i * size:(i + 1) * size]))
 
-    return tick, id, heading, isAlive, body
+    return tick, snake_id, heading, is_alive, body
 
-def SendLobbyJoinRequest(address):
-    SendMessage(address, MsgType.LOBBY_JOIN)
+def send_lobby_join_request(address):
+    send_message(address, MsgType.LOBBY_JOIN)
 
-def SendReadyMessage(address):
-    SendMessage(address, MsgType.READY)
+def send_ready_message(address):
+    send_message(address, MsgType.READY)
 
-def SendSetupMessage(address):
-    SendMessage(address, MsgType.SETUP)
+def send_setup_message(address):
+    send_message(address, MsgType.SETUP)
 
-def SendStartMessage(address):
-    SendMessage(address, MsgType.START)
+def send_start_message(address):
+    send_message(address, MsgType.START)
 
-def SendEndMessage(address):
-    SendMessage(address, MsgType.END)
+def send_end_message(address):
+    send_message(address, MsgType.END)
 
-def SendInputMessage(address, heading):
-    SendMessage(address, MsgType.INPUT, pack(MsgFmt.PLAYER_INPUT, heading))
+def send_input_message(address, heading):
+    send_message(address, MsgType.INPUT, pack(MsgFmt.PLAYER_INPUT, heading))
 
-def UnpackInputMessage(msgBody):
-    return int(unpack(MsgFmt.PLAYER_INPUT, msgBody)[0])
+def unpack_input_message(msg_body):
+    return int(unpack(MsgFmt.PLAYER_INPUT, msg_body)[0])

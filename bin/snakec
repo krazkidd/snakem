@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 # *************************************************************************
@@ -24,10 +24,10 @@
 
 import imp
 
+from snakem.role import client
+
 if __name__ == '__main__':
     # run set_path() from other script without .py extension
     imp.load_source('snakes_module', './snakes').set_path()
-
-    from snakem.role import client
 
     client.start()

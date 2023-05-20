@@ -24,129 +24,129 @@
 import curses
 import os
 
-from snakem.test import debug
+from ..test import debug
 
-stdscr = None
+_stdscr = None
 
-_appCallback = None
+_app_callback = None
 
-_lastDebugMessage = ''
+_last_debug_message = ''
 
-def InitClientWindow(appCallback):
-    global _appCallback
-    _appCallback = appCallback
+def init_client_window(app_callback):
+    global _app_callback
+    _app_callback = app_callback
 
     # set shorter delay for ESC key recognition
-    if not os.environ.has_key('ESCDELAY'):
+    if 'ESCDELAY' not in os.environ:
         os.environ.setdefault('ESCDELAY', '75')
 
     # cbreak on, echo off, keypad on, colors on
-    curses.wrapper(_WrapperCallback)
+    curses.wrapper(_wrapper_callback)
 
-def _WrapperCallback(scr):
-    global stdscr
-    stdscr = scr
+def _wrapper_callback(scr):
+    global _stdscr
+    _stdscr = scr
 
     if curses.curs_set(0) == curses.ERR:
-        ShowDebug('Can\'t hide cursor')
+        show_debug('Can\'t hide cursor')
 
-    _appCallback()
+    _app_callback()
 
-def ShowMessage(msg):
-    Erase()
-    h, w = GetWindowSize()
-    stdscr.addstr(h / 2, max(0, w / 2 - len(msg) / 2), msg)
-    stdscr.refresh()
+def show_message(msg):
+    erase()
+    height, width = get_window_size()
+    _stdscr.addstr(height // 2, max(0, width // 2 - len(msg) // 2), msg)
+    _stdscr.refresh()
 
-def ShowMOTD(host, motd, lobbyList):
-    Erase()
+def show_motd(host, motd, lobby_list):
+    erase()
 
-    h, w = GetWindowSize()
+    height, width = get_window_size()
 
     if motd:
-        stdscr.addstr(2, max(0, w / 2 - len(motd) / 2), motd)
+        _stdscr.addstr(2, max(0, width // 2 - len(motd) // 2), motd)
 
-    if lobbyList:
-        listHdr = 'There are currently ' + str(len(lobbyList)) + ' lobbies on this server (' + host[0] + '):'
-        y = 5
-        x = min(5, max(0, w / 2 - len(listHdr) / 2))
-        stdscr.addstr(y, x, listHdr)
-        for i in range(len(lobbyList)):
-            y += 2
-            stdscr.addstr(y, x, str(i + 1) + '. Lobby ' + str(lobbyList[i][0]) + ' on port ' + str(lobbyList[i][1]))
+    if lobby_list:
+        list_hdr = f'There are currently {len(lobby_list)} lobbies on this server ({host[0]}):'
+        y_pos = 5
+        x_pos = min(5, max(0,  width // 2 - len(list_hdr) // 2))
+        _stdscr.addstr(y_pos, x_pos, list_hdr)
+        for i in range(len(lobby_list)):
+            y_pos += 2
+            _stdscr.addstr(y_pos, x_pos, f'{i + 1}. Lobby {lobby_list[i][0]} on port {lobby_list[i][1]}')
 
-    stdscr.refresh()
+    _stdscr.refresh()
 
-def ShowLobby():
-    ShowMessage('Waiting for game to start . . .')
+def show_lobby():
+    show_message('Waiting for game to start . . .')
 
-def ShowGame(game):
-    stdscr.erase()
+def show_game(game):
+    _stdscr.erase()
 
-    stdscr.border()
+    _stdscr.border()
 
-    debugStr = ''
-    h, w = stdscr.getmaxyx()
-    for id, snake in game.snakes.iteritems():
-        if len(debugStr) > 0:
-            debugStr += ', '
+    debug_str = ''
+    height, width = _stdscr.getmaxyx()
+    for snake in game.snakes:
+        if len(debug_str) > 0:
+            debug_str += ', '
 
-        for x, y in snake.body:
-            if 0 <= x <= w - 1 and 0 <= y <= h - 1:
-                if (x, y) == snake.body[0]:
-                    stdscr.addch(y, x, ord('X'))
+        for x_pos, y_pos in snake.body:
+            if 0 <= x_pos <= width - 1 and 0 <= y_pos <= height - 1:
+                if (x_pos, y_pos) == snake.body[0]:
+                    _stdscr.addch(y_pos, x_pos, ord('X'))
                 else:
-                    stdscr.addch(y, x, ord('O'))
+                    _stdscr.addch(y_pos, x_pos, ord('O'))
 
-        debugStr += 'snake: ' + str(len(snake.body))
+        debug_str += 'snake: ' + str(len(snake.body))
 
     if game.pellet is not None:
-        stdscr.addch(game.pellet.pos[1], game.pellet.pos[0], ord('+'))
+        _stdscr.addch(game.pellet.pos[1], game.pellet.pos[0], ord('+'))
 
     #TODO name the snakes and show score at the top?
     #ShowDebugInGame(debugStr)
-    ShowDebugInGame()
+    show_debug_in_game()
 
-    stdscr.refresh()
+    _stdscr.refresh()
 
-def ShowDebug(msg=None):
-    global _lastDebugMessage
+def show_debug(msg=None):
+    global _last_debug_message
 
-    if debug.doPrintDebug:
-        h, w = stdscr.getmaxyx()
+    if debug.DO_PRINT_DEBUG:
+        height, width = _stdscr.getmaxyx()
         if msg and len(msg) > 0:
             msg += ' '
-            msg = msg[:w - 1]
-            _lastDebugMessage = msg
+            msg = msg[:width - 1]
+            _last_debug_message = msg
         else:
-            msg = _lastDebugMessage
-        stdscr.addstr(h - 1, 0, msg)
-        stdscr.hline(h - 1, len(msg), ord('-'), w - len(msg))
+            msg = _last_debug_message
+        _stdscr.addstr(height - 1, 0, msg)
+        _stdscr.hline(height - 1, len(msg), ord('-'), width - len(msg))
 
-def ShowDebugInGame(msg=None):
-    global _lastDebugMessage
+def show_debug_in_game(msg=None):
+    global _last_debug_message
 
-    if debug.doPrintDebug:
-        h, w = stdscr.getmaxyx()
+    if debug.DO_PRINT_DEBUG:
+        height, width = _stdscr.getmaxyx()
         if msg and len(msg) > 0:
             msg = ' ' + msg + ' '
             # truncate very long messages
-            msg = msg[:w - 1 - 2] # - 2 because we start at cell 2
-            _lastDebugMessage = msg
+            msg = msg[:width - 1 - 2] # - 2 because we start at cell 2
+            _last_debug_message = msg
         else:
-            msg = _lastDebugMessage
-        stdscr.addstr(h - 1, 2, msg)
+            msg = _last_debug_message
+        _stdscr.addstr(height - 1, 2, msg)
 
-def GetWindowSize():
-    h, w = stdscr.getmaxyx()
-    if debug.doPrintDebug:
-        h -= 1
-    return h, w
+def get_window_size():
+    height, width = _stdscr.getmaxyx()
+    if debug.DO_PRINT_DEBUG:
+        height -= 1
+    return height, width
 
-def GetKey():
-    return stdscr.getch()
+def get_key():
+    return _stdscr.getch()
 
-def Erase():
-    stdscr.erase()
-    ShowDebug()
-    stdscr.refresh()
+def erase():
+    _stdscr.erase()
+    show_debug()
+    _stdscr.refresh()

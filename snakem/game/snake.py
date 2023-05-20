@@ -23,7 +23,7 @@
 
 from collections import deque
 
-from snakem.enums import *
+from ..enums import Dir
 
 class Snake:
 
@@ -34,97 +34,97 @@ class Snake:
 
     """
 
-    def __init__(self, headPos, heading, length=4):
+    def __init__(self, head_pos, heading, length=4):
         self.body = deque()
 
-        x, y = headPos
+        x_pos, y_pos = head_pos
         for i in range(length):
             if heading == Dir.Right:
-                self.body.append((x - i, y))
+                self.body.append((x_pos - i, y_pos))
             elif heading == Dir.Left:
-                self.body.append((x + i, y))
+                self.body.append((x_pos + i, y_pos))
             elif heading == Dir.Up:
-                self.body.append((x, y + i))
+                self.body.append((x_pos, y_pos + i))
             elif heading == Dir.Down:
-                self.body.append((x, y - i))
+                self.body.append((x_pos, y_pos - i))
 
         self.heading = heading
-        self.isAlive = True
+        self.is_alive = True
 
-        self.__nextHeading = None
-        self.__headingChanged = False
-        self.__shouldGrow = False
+        self.__next_heading = None
+        self.__heading_changed = False
+        self.__should_grow = False
 
     def grow(self):
 
         """Grow the Snake one segment longer.
 
         This is called whenever a snake eats a pellet.
-        
+
         """
 
         # this just sets a flag so that on the next move(),
         # the last body segment won't be popped off
-        self.__shouldGrow = True
+        self.__should_grow = True
 
     def move(self):
 
         """Move (update) the snake's body.
 
         This should be called once for every game tick.
-        
+
         """
 
-        if self.isAlive:
-            x, y = self.body[0]
+        if self.is_alive:
+            x_pos, y_pos = self.body[0]
 
             # check the heading of the snake and move the
             # head's position accordingly
             if self.heading == Dir.Right:
-                self.body.appendleft((x + 1, y))
+                self.body.appendleft((x_pos + 1, y_pos))
             elif self.heading == Dir.Left:
-                self.body.appendleft((x - 1, y))
+                self.body.appendleft((x_pos - 1, y_pos))
             elif self.heading == Dir.Up:
-                self.body.appendleft((x, y - 1))
+                self.body.appendleft((x_pos, y_pos - 1))
             elif self.heading == Dir.Down:
-                self.body.appendleft((x, y + 1))
+                self.body.appendleft((x_pos, y_pos + 1))
 
             # pop the last body segment unless the snake is supposed to grow
-            if self.__shouldGrow:
-                self.__shouldGrow = False
+            if self.__should_grow:
+                self.__should_grow = False
             else:
                 self.body.pop()
 
-            if self.__nextHeading:
-                self.heading = self.__nextHeading
-                self.__nextHeading = None
+            if self.__next_heading:
+                self.heading = self.__next_heading
+                self.__next_heading = None
 
-            self.__headingChanged = False
+            self.__heading_changed = False
 
-    def changeHeading(self, newHeading):
+    def change_heading(self, new_heading):
 
         """Tell the Snake the new direction to move in.
 
         The Snake cannot go backwards, so the only real change that
         can happen is to turn left or right.
 
-        Returns False if there was no heading change; True if there was 
+        Returns False if there was no heading change; True if there was
         a change.
 
         """
 
         # if heading was already changed, queue the change for
         # the next move()
-        if self.__headingChanged:
-            self.__nextHeading = newHeading
+        if self.__heading_changed:
+            self.__next_heading = new_heading
             return False
 
         # skip if move is parallel
-        if (self.heading in (Dir.Up, Dir.Down) and newHeading in (Dir.Up, Dir.Down)) \
-           or (self.heading in (Dir.Left, Dir.Right) and newHeading in (Dir.Left, Dir.Right)):
+        if (self.heading in (Dir.Up, Dir.Down) and new_heading in (Dir.Up, Dir.Down)) \
+           or (self.heading in (Dir.Left, Dir.Right) and new_heading in (Dir.Left, Dir.Right)):
             return False
 
-        self.heading = newHeading
-        self.__headingChanged = True
+        self.heading = new_heading
+        self.__heading_changed = True
 
         return True
