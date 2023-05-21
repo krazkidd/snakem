@@ -53,18 +53,18 @@ def close_socket():
     if _sock:
         _sock.close()
 
-def wait_for_input(net_callback, keyboard_callback=None, do_block=True):
+def wait_for_input(handler, do_block=True):
     if do_block:
         # we block on this call so we're not wasting cycles outside of an active game
         readable, writable, exceptional = select.select([_sock, sys.stdin], [], [])
     else:
         readable, writable, exceptional = select.select([_sock, sys.stdin], [], [], TIMEOUT)
 
-    if keyboard_callback is not None and sys.stdin in readable:
-        keyboard_callback()
-    elif net_callback is not None and _sock in readable:
+    if handler.handle_input is not None and sys.stdin in readable:
+        handler.handle_input()
+    elif handler.handle_net_message is not None and _sock in readable:
         address, msg_type, msg_body = receive_message()
-        net_callback(address, msg_type, msg_body)
+        handler.handle_net_message(address, msg_type, msg_body)
 
 def send_message(address, msg_type, msg_body=None):
     if msg_body:

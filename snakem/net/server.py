@@ -53,13 +53,13 @@ class MainServer:
 
         try:
             while True:
-                net.wait_for_input(self._handle_net_message)
+                net.wait_for_input(self)
         except BaseException as ex:
             debug.print_err(str(ex))
         finally:
             net.close_socket()
 
-    def _handle_net_message(self, address, msg_type, msg_body):
+    def handle_net_message(self, address, msg_type, msg_body):
         if msg_type == MsgType.HELLO:
             net.send_motd(address, cfg.MOTD)
         elif msg_type == MsgType.LOBBY_REQ:
@@ -91,7 +91,7 @@ class LobbyServer(MainServer):
 
         try:
             while True:
-                net.wait_for_input(self._handle_net_message, do_block=self.server_state != GameState.GAME)
+                net.wait_for_input(self, self.server_state != GameState.GAME)
 
                 if self.server_state == GameState.GAME:
                     tick_time += net.TIMEOUT
@@ -118,7 +118,7 @@ class LobbyServer(MainServer):
         finally:
             net.close_socket()
 
-    def _handle_net_message(self, address, msg_type, msg_body):
+    def handle_net_message(self, address, msg_type, msg_body):
         if address in self.active_players:
             if self.server_state == GameState.GAME:
                 self._handle_net_message_during_game(address, msg_type, msg_body)
