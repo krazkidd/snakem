@@ -78,7 +78,7 @@ class LobbyServer(MainServer):
 
         self.server_state = None
 
-        # activePlayers maps net addresses to tuples of (r, s) where:
+        # self.active_players maps net addresses to tuples of (r, s) where:
         #   r = ready status (MsgType.{NOT_,}READY)
         #   s = snake id when a game is running
         self.active_players = dict()
@@ -145,7 +145,7 @@ class LobbyServer(MainServer):
                         self._start_game_mode()
                 elif msg_type == MsgType.NOT_READY:
                     self.active_players[address] = (MsgType.NOT_READY, snake_id)
-        else:  # address not in self.activePlayers
+        else:  # address not in self.active_players
             if self.server_state == GameState.LOBBY:
                 if msg_type == MsgType.LOBBY_JOIN:
                     if len(self.active_players) < 4:
