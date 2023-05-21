@@ -27,13 +27,13 @@ import sys
 from ..config import server as cfg
 
 from ..game import game
-from ..net import net
+from . import net
 from ..test import debug
 from ..enums import GameState, MsgType
 
 class MainServer:
     def __init__(self):
-        self.lobbies = []
+        self.__lobbies = []
 
     def start(self):
         debug.init_debug('MainServer', cfg.PRINT_DEBUG, cfg.PRINT_ERROR, cfg.PRINT_NETMSG)
@@ -45,7 +45,7 @@ class MainServer:
             if pid == 0:
                 lobby.start()
                 sys.exit(0)
-            self.lobbies.append(lobby)
+            self.__lobbies.append(lobby)
 
         net.init_server_socket(cfg.BIND_ADDR)
 
@@ -53,20 +53,22 @@ class MainServer:
 
         try:
             while True:
-                net.wait_for_input(self._handle_net_message)
-        except BaseException as ex:
+                net.wait_for_input(self)
+        except Exception as ex:
             debug.print_err(str(ex))
         finally:
             net.close_socket()
 
-    def _handle_net_message(self, address, msg_type, msg_body):
+    def handle_net_message(self, address, msg_type, msg_body):
         if msg_type == MsgType.HELLO:
             net.send_motd(address, cfg.MOTD)
         elif msg_type == MsgType.LOBBY_REQ:
-            net.send_lobby_list(address, self.lobbies)
+            net.send_lobby_list(address, self.__lobbies)
 
 class LobbyServer(MainServer):
     def __init__(self, lobbyNum):
+        MainServer.__init__(self)
+
         # unique server ID #
         self.lobby_num = lobbyNum
         self.connect_port = net.init_server_socket((cfg.BIND_ADDR[0], 0)) # port = 0 will use random port
@@ -91,7 +93,7 @@ class LobbyServer(MainServer):
 
         try:
             while True:
-                net.wait_for_input(self._handle_net_message, do_block=self.server_state != GameState.GAME)
+                net.wait_for_input(self, self.server_state != GameState.GAME)
 
                 if self.server_state == GameState.GAME:
                     tick_time += net.TIMEOUT
@@ -106,19 +108,19 @@ class LobbyServer(MainServer):
 
                         # end game when all snakes are dead
                         #TODO the game should end when at most *one* snake is alive
-                        for snake in self.game.snakes:
-                            if snake.isAlive:
+                        for snake in self.game.snakes.values():
+                            if snake.is_alive:
                                 break
-                        #TODO does this have the correct indentation?
-                        else:
-                            self._end_game_mode()
-                            self._start_lobby_mode()
-        except BaseException as ex:
+                            #TODO does this have the correct indentation?
+                            else:
+                                self._end_game_mode()
+                                self._start_lobby_mode()
+        except Exception as ex:
             debug.print_err(f'{self.lobby_num}: {ex}')
         finally:
             net.close_socket()
 
-    def _handle_net_message(self, address, msg_type, msg_body):
+    def handle_net_message(self, address, msg_type, msg_body):
         if address in self.active_players:
             if self.server_state == GameState.GAME:
                 self._handle_net_message_during_game(address, msg_type, msg_body)
@@ -153,7 +155,7 @@ class LobbyServer(MainServer):
         do_update_clients = False
 
         if msg_type == MsgType.INPUT:
-            self.game.snakes[self.active_players[address][1]].changeHeading(net.unpack_input_message(msg_body))
+            self.game.snakes[self.active_players[address][1]].change_heading(net.unpack_input_message(msg_body))
             do_update_clients = True
 
         if do_update_clients:
