@@ -2,7 +2,7 @@ import curses
 import curses.ascii
 
 # the address of the main server to connect to
-SERVER_ADDR = ('localhost', 11845)
+SERVER_ADDR = ('127.0.0.1', 11845)
 
 # how often to advance the game state
 STEP_TIME = 0.1

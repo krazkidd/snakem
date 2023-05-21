@@ -1,5 +1,5 @@
 # the address the main server binds to
-BIND_ADDR = ('localhost', 11845)
+BIND_ADDR = ('127.0.0.1', 11845)
 
 # welcome message for new clients
 MOTD = 'Welcome to my Snake-M development server!'
