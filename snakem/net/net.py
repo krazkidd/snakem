@@ -103,7 +103,7 @@ def send_hello_message(address):
     send_message(address, MsgType.HELLO)
 
 def send_motd(address, motd):
-    send_message(address, MsgType.MOTD, motd)
+    send_message(address, MsgType.MOTD, str.encode(motd))
 
 def send_quit_message(address):
     send_message(address, MsgType.LOBBY_QUIT)
