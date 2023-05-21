@@ -111,10 +111,10 @@ class LobbyServer(MainServer):
                         for snake in self.game.snakes.values():
                             if snake.is_alive:
                                 break
-                        #TODO does this have the correct indentation?
-                        else:
-                            self._end_game_mode()
-                            self._start_lobby_mode()
+                            #TODO does this have the correct indentation?
+                            else:
+                                self._end_game_mode()
+                                self._start_lobby_mode()
         except Exception as ex:
             debug.print_err(f'{self.lobby_num}: {ex}')
         finally:
