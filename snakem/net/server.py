@@ -54,7 +54,7 @@ class MainServer:
         try:
             while True:
                 net.wait_for_input(self)
-        except BaseException as ex:
+        except Exception as ex:
             debug.print_err(str(ex))
         finally:
             net.close_socket()
@@ -115,7 +115,7 @@ class LobbyServer(MainServer):
                         else:
                             self._end_game_mode()
                             self._start_lobby_mode()
-        except BaseException as ex:
+        except Exception as ex:
             debug.print_err(f'{self.lobby_num}: {ex}')
         finally:
             net.close_socket()
