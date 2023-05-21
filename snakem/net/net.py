@@ -60,9 +60,9 @@ def wait_for_input(handler, do_block=True):
     else:
         readable, writable, exceptional = select.select([_sock, sys.stdin], [], [], TIMEOUT)
 
-    if handler.handle_input is not None and sys.stdin in readable:
+    if sys.stdin in readable:
         handler.handle_input()
-    elif handler.handle_net_message is not None and _sock in readable:
+    elif _sock in readable:
         address, msg_type, msg_body = receive_message()
         handler.handle_net_message(address, msg_type, msg_body)
 

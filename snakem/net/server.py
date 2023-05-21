@@ -65,6 +65,9 @@ class MainServer:
         elif msg_type == MsgType.LOBBY_REQ:
             net.send_lobby_list(address, self.__lobbies)
 
+    def handle_input(self):
+        pass
+
 class LobbyServer(MainServer):
     def __init__(self, lobbyNum):
         MainServer.__init__(self)
