@@ -100,7 +100,7 @@ def get_addl_info_for_debug(msg_type, msg_body):
     return None
 
 def send_hello_message(address):
-    send_message(address, MsgType.HELLO)
+    send_message(address, MsgType.MOTD)
 
 def send_motd(address, motd):
     send_message(address, MsgType.MOTD, str.encode(motd))

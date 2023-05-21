@@ -60,7 +60,7 @@ class MainServer:
             net.close_socket()
 
     def handle_net_message(self, address, msg_type, msg_body):
-        if msg_type == MsgType.HELLO:
+        if msg_type == MsgType.MOTD:
             net.send_motd(address, cfg.MOTD)
         elif msg_type == MsgType.LOBBY_REQ:
             net.send_lobby_list(address, self.__lobbies)
