@@ -131,7 +131,7 @@ def unpack_lobby_list(msg_body):
 
 def send_snake_update(address, tick, snake_id, snake):
     #TODO don't exceed MAX_MSG_SIZE (without breaking the game--allow splitting an update or increase MAX_MSG_SIZE)
-    buf = pack(MsgFmt.SNAKE_UPDATE_HDR, tick, snake_id, snake.heading, snake.isAlive, len(snake.body))
+    buf = pack(MsgFmt.SNAKE_UPDATE_HDR, tick, snake_id, snake.heading, snake.is_alive, len(snake.body))
     for pos in snake.body:
         buf += pack(MsgFmt.SNAKE_UPDATE_BDY, pos[0], pos[1])
 

@@ -108,8 +108,8 @@ class LobbyServer(MainServer):
 
                         # end game when all snakes are dead
                         #TODO the game should end when at most *one* snake is alive
-                        for snake in self.game.snakes:
-                            if snake.isAlive:
+                        for snake in self.game.snakes.values():
+                            if snake.is_alive:
                                 break
                         #TODO does this have the correct indentation?
                         else:
@@ -155,7 +155,7 @@ class LobbyServer(MainServer):
         do_update_clients = False
 
         if msg_type == MsgType.INPUT:
-            self.game.snakes[self.active_players[address][1]].changeHeading(net.unpack_input_message(msg_body))
+            self.game.snakes[self.active_players[address][1]].change_heading(net.unpack_input_message(msg_body))
             do_update_clients = True
 
         if do_update_clients:

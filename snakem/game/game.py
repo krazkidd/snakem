@@ -44,12 +44,12 @@ class Game:
             # check with other snakes
             for other_snake in self.snakes.values():
                 if snake is not other_snake and snake.body[0] in other_snake.body:
-                    snake.isAlive = False
+                    snake.is_alive = False
 
             x_pos, y_pos = snake.body[0]
             # check boundaries
             if x_pos in (0, self.width - 1) or y_pos in (0, self.height - 1):
-                snake.isAlive = False
+                snake.is_alive = False
             # check pellet
             elif snake.body[0] == self.pellet.pos:
                 snake.grow()
@@ -98,7 +98,7 @@ class Game:
 
         snake = self.snakes[snake_id]
         snake.heading = heading
-        snake.isAlive = is_alive
+        snake.is_alive = is_alive
         snake.body = body
 
     def update_pellet(self, pos):
