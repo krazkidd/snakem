@@ -33,7 +33,7 @@ from ..enums import GameState, MsgType
 
 class MainServer:
     def __init__(self):
-        self.lobbies = []
+        self.__lobbies = []
 
     def start(self):
         debug.init_debug('MainServer', cfg.PRINT_DEBUG, cfg.PRINT_ERROR, cfg.PRINT_NETMSG)
@@ -45,7 +45,7 @@ class MainServer:
             if pid == 0:
                 lobby.start()
                 sys.exit(0)
-            self.lobbies.append(lobby)
+            self.__lobbies.append(lobby)
 
         net.init_server_socket(cfg.BIND_ADDR)
 
@@ -63,10 +63,12 @@ class MainServer:
         if msg_type == MsgType.HELLO:
             net.send_motd(address, cfg.MOTD)
         elif msg_type == MsgType.LOBBY_REQ:
-            net.send_lobby_list(address, self.lobbies)
+            net.send_lobby_list(address, self.__lobbies)
 
 class LobbyServer(MainServer):
     def __init__(self, lobbyNum):
+        MainServer.__init__(self)
+
         # unique server ID #
         self.lobby_num = lobbyNum
         self.connect_port = net.init_server_socket((cfg.BIND_ADDR[0], 0)) # port = 0 will use random port
