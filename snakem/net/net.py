@@ -108,27 +108,6 @@ def send_motd(address, motd):
 def send_quit_message(address):
     send_message(address, MsgType.LOBBY_QUIT)
 
-def send_lobby_list_request(address):
-    send_message(address, MsgType.LOBBY_REQ)
-
-def send_lobby_list(address, lobbies):
-    buf = pack(MsgFmt.LBY_CNT, len(lobbies))
-    for lobby in lobbies:
-        buf += pack(MsgFmt.LBY, lobby.lobby_num, lobby.connect_port)
-
-    send_message(address, MsgType.LOBBY_REP, buf)
-
-def unpack_lobby_list(msg_body):
-    lobby_count = unpack(MsgFmt.LBY_CNT, msg_body[:calcsize(MsgFmt.LBY_CNT)])[0]
-    packed_lobbies = msg_body[calcsize(MsgFmt.LBY_CNT):]
-
-    lobby_list = []
-    size = calcsize(MsgFmt.LBY)
-    for i in range(lobby_count):
-        lobby_list.append(unpack(MsgFmt.LBY, packed_lobbies[i * size:(i + 1) * size]))
-
-    return lobby_list
-
 def send_snake_update(address, tick, snake_id, snake):
     #TODO don't exceed MAX_MSG_SIZE (without breaking the game--allow splitting an update or increase MAX_MSG_SIZE)
     buf = pack(MsgFmt.SNAKE_UPDATE_HDR, tick, snake_id, snake.heading, snake.is_alive, len(snake.body))
