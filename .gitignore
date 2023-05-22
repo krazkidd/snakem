@@ -4,9 +4,6 @@
 # compiled Python files
 *.pyc
 
-# third-party libs
-pygcurse.py
-
 # Mark's personal TODOs
 TODO*
 
