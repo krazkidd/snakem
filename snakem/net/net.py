@@ -140,9 +140,6 @@ def send_setup_message(address):
 def send_start_message(address):
     send_message(address, MsgType.START)
 
-def send_end_message(address):
-    send_message(address, MsgType.END)
-
 def send_input_message(address, heading):
     send_message(address, MsgType.INPUT, pack(MsgFmt.PLAYER_INPUT, heading))
 
