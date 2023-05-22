@@ -136,3 +136,6 @@ class Client:
         self._game_instance = game.Game(width, height)
 
         display.show_game(self._game_instance)
+
+if __name__ == '__main__':
+    Client().start()

@@ -146,3 +146,6 @@ class Server:
 
         for addr in self.active_players:
             net.send_start_message(addr)
+
+if __name__ == '__main__':
+    Server().start()
