@@ -58,27 +58,11 @@ def show_message(msg):
     _stdscr.addstr(height // 2, max(0, width // 2 - len(msg) // 2), msg)
     _stdscr.refresh()
 
-def show_motd(host, motd, lobby_list):
-    erase()
-
-    height, width = get_window_size()
-
+def show_lobby(motd):
     if motd:
-        _stdscr.addstr(2, max(0, width // 2 - len(motd) // 2), motd)
-
-    if lobby_list:
-        list_hdr = f'There are currently {len(lobby_list)} lobbies on this server ({host[0]}):'
-        y_pos = 5
-        x_pos = min(5, max(0,  width // 2 - len(list_hdr) // 2))
-        _stdscr.addstr(y_pos, x_pos, list_hdr)
-        for i in range(len(lobby_list)):
-            y_pos += 2
-            _stdscr.addstr(y_pos, x_pos, f'{i + 1}. Lobby {lobby_list[i][0]} on port {lobby_list[i][1]}')
-
-    _stdscr.refresh()
-
-def show_lobby():
-    show_message('Waiting for game to start . . .')
+        show_message(motd)
+    else:
+        show_message('Waiting for game to start . . .')
 
 def show_game(game):
     _stdscr.erase()

@@ -47,4 +47,4 @@ def set_path():
 if __name__ == '__main__':
     set_path()
 
-    server.MainServer().start()
+    server.Server().start()

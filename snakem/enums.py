@@ -26,21 +26,13 @@ class Dir:
     Up, Down, Left, Right = range(4)
 
 class GameState:
-    MOTD, LOBBY, GAME_SETUP, GAME, GAME_OVER = range(5)
+    LOBBY, GAME_SETUP, GAME, GAME_OVER = range(4)
 
 class MsgFmt:
     # net message header
     # B: message type
     # H: length of message (including header)
     HDR = '!BH'
-
-    # number of lobbies
-    LBY_CNT = '!B'
-
-    # info for single lobby
-    # B: lobby number
-    # H: port number
-    LBY = '!BH'
 
     # snake update message (header)
     # I: tick num (game time elapsed)
