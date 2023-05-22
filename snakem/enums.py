@@ -52,7 +52,7 @@ class MsgFmt:
     # i: pellet ID
     # i: x position
     # i: y position
-    PELLET_UPDATE_HDR = '!Iiii'
+    PELLET_UPDATE = '!Iiii'
 
     # client/player input
     # B: new heading

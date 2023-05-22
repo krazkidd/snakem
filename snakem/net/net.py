@@ -110,10 +110,10 @@ def send_quit_message(address):
     send_message(address, MsgType.LOBBY_QUIT)
 
 def send_pellet_update(address, tick, pellet_id, pellet):
-    send_message(address, MsgType.PELLET_UPDATE, pack(MsgFmt.PELLET_UPDATE_HDR, tick, pellet_id, pellet.pos[0], pellet.pos[1]))
+    send_message(address, MsgType.PELLET_UPDATE, pack(MsgFmt.PELLET_UPDATE, tick, pellet_id, pellet.pos[0], pellet.pos[1]))
 
 def unpack_pellet_update(msg_body):
-    tick, pellet_id, pos_x, pos_y = unpack(MsgFmt.PELLET_UPDATE_HDR, msg_body[:calcsize(MsgFmt.PELLET_UPDATE_HDR)])
+    tick, pellet_id, pos_x, pos_y = unpack(MsgFmt.PELLET_UPDATE, msg_body[:calcsize(MsgFmt.PELLET_UPDATE)])
 
     return tick, pellet_id, (pos_x, pos_y)
 
