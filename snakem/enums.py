@@ -54,14 +54,12 @@ class MsgFmt:
 class MsgType:
     """Enum for Snake network messages"""
 
-    NONE, MOTD, LOBBY_JOIN, LOBBY_QUIT, \
-       READY, NOT_READY, START, END, SNAKE_UPDATE, CHAT, SETUP, INPUT = range(12)
+    MOTD, LOBBY_JOIN, LOBBY_QUIT, \
+       READY, NOT_READY, START, END, SNAKE_UPDATE, CHAT, SETUP, INPUT = range(11)
 
     @staticmethod
     def get_name(msg_type):
-        if msg_type == MsgType.NONE:
-            return "NONE"
-        elif msg_type == MsgType.MOTD:
+        if msg_type == MsgType.MOTD:
             return "MOTD"
         elif msg_type == MsgType.LOBBY_JOIN:
             return "LOBBY_JOIN"
