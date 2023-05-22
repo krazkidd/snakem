@@ -119,6 +119,8 @@ class Server:
 
         if do_update_clients:
             for addr in self.active_players:
+                net.send_pellet_update(addr, self.game.tick_num, 0, self.game.pellet)
+
                 for snake_id, snake in self.game.snakes.items():
                     net.send_snake_update(addr, self.game.tick_num, snake_id, snake)
 
@@ -141,6 +143,8 @@ class Server:
         self.game.spawn_new_pellet()
 
         for addr in self.active_players:
+            net.send_pellet_update(addr, self.game.tick_num, 0, self.game.pellet)
+
             for snake_id, snake in self.game.snakes.items():
                 net.send_snake_update(addr, self.game.tick_num, snake_id, snake)
 

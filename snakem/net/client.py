@@ -92,6 +92,10 @@ class Client:
             tick, snake_id, heading, is_alive, body = net.unpack_snake_update(msg_body)
 
             self._game_instance.update_snake(tick, snake_id, heading, is_alive, body)
+        elif msg_type == MsgType.PELLET_UPDATE:
+            tick, pellet_id, pos = net.unpack_pellet_update(msg_body)
+
+            self._game_instance.update_pellet(tick, pellet_id, pos)
         elif msg_type == MsgType.LOBBY_JOIN:
             self._start_lobby_mode()
 

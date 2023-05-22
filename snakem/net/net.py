@@ -109,6 +109,14 @@ def send_motd(address, motd):
 def send_quit_message(address):
     send_message(address, MsgType.LOBBY_QUIT)
 
+def send_pellet_update(address, tick, pellet_id, pellet):
+    send_message(address, MsgType.PELLET_UPDATE, pack(MsgFmt.PELLET_UPDATE_HDR, tick, pellet_id, pellet.pos[0], pellet.pos[1]))
+
+def unpack_pellet_update(msg_body):
+    tick, pellet_id, pos_x, pos_y = unpack(MsgFmt.PELLET_UPDATE_HDR, msg_body[:calcsize(MsgFmt.PELLET_UPDATE_HDR)])
+
+    return tick, pellet_id, (pos_x, pos_y)
+
 def send_snake_update(address, tick, snake_id, snake):
     #TODO don't exceed MAX_MSG_SIZE (without breaking the game--allow splitting an update or increase MAX_MSG_SIZE)
     buf = pack(MsgFmt.SNAKE_UPDATE_HDR, tick, snake_id, snake.heading, snake.is_alive, len(snake.body))

@@ -47,6 +47,13 @@ class MsgFmt:
     # i: y position
     SNAKE_UPDATE_BDY = '!ii'
 
+    # pellet update message (header)
+    # I: tick num (game time elapsed)
+    # i: pellet ID
+    # i: x position
+    # i: y position
+    PELLET_UPDATE_HDR = '!Iiii'
+
     # client/player input
     # B: new heading
     PLAYER_INPUT = '!B'
@@ -55,7 +62,7 @@ class MsgType:
     """Enum for Snake network messages"""
 
     MOTD, LOBBY_JOIN, LOBBY_QUIT, \
-       READY, NOT_READY, START, SNAKE_UPDATE, CHAT, SETUP, INPUT = range(10)
+       READY, NOT_READY, START, SNAKE_UPDATE, PELLET_UPDATE, CHAT, SETUP, INPUT = range(11)
 
     @staticmethod
     def get_name(msg_type):
