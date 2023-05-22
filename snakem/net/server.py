@@ -73,7 +73,9 @@ class Server:
                                 break
                             #TODO does this have the correct indentation?
                             else:
-                                self._end_game_mode()
+                                for addr in self.active_players:
+                                    net.send_lobby_join_request(addr)
+
                                 self._start_lobby_mode()
         except Exception as ex:
             debug.print_err(str(ex))
@@ -129,6 +131,8 @@ class Server:
     def _start_lobby_mode(self):
         self.server_state = GameState.LOBBY
 
+        self.game = None
+
     def _start_game_mode(self):
         self.server_state = GameState.GAME
 
@@ -145,9 +149,3 @@ class Server:
 
         for addr in self.active_players:
             net.send_start_message(addr)
-
-    def _end_game_mode(self):
-        for addr in self.active_players:
-            net.send_end_message(addr)
-
-        self.game = None

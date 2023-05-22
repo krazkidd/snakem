@@ -94,8 +94,7 @@ class Client:
             tick, snake_id, heading, is_alive, body = net.unpack_snake_update(msg_body)
 
             self._game_instance.update_snake(tick, snake_id, heading, is_alive, body)
-        elif msg_type == MsgType.END:
-            self._end_game_mode()
+        elif msg_type == MsgType.LOBBY_JOIN:
             self._start_lobby_mode()
 
     def handle_input(self):
@@ -122,12 +121,11 @@ class Client:
                 net.send_input_message(self._lobby_addr, Dir.Up)
             elif input_char in cfg.KEYS_MV_RIGHT:
                 net.send_input_message(self._lobby_addr, Dir.Right)
-        elif self._client_state == GameState.GAME_OVER:
-            if input_char in cfg.KEYS_LOBBY_QUIT:
-                self._start_lobby_mode()
 
     def _start_lobby_mode(self):
         self._client_state = GameState.LOBBY
+
+        self._game_instance = None
 
         display.show_lobby(self._motd)
 
@@ -140,6 +138,3 @@ class Client:
         self._game_instance = game.Game(width, height)
 
         display.show_game(self._game_instance)
-
-    def _end_game_mode(self):
-        self._game_instance = None

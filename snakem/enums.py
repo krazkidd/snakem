@@ -26,7 +26,7 @@ class Dir:
     Up, Down, Left, Right = range(4)
 
 class GameState:
-    LOBBY, GAME_SETUP, GAME, GAME_OVER = range(4)
+    LOBBY, GAME = range(2)
 
 class MsgFmt:
     # net message header
@@ -55,7 +55,7 @@ class MsgType:
     """Enum for Snake network messages"""
 
     MOTD, LOBBY_JOIN, LOBBY_QUIT, \
-       READY, NOT_READY, START, END, SNAKE_UPDATE, CHAT, SETUP, INPUT = range(11)
+       READY, NOT_READY, START, SNAKE_UPDATE, CHAT, SETUP, INPUT = range(10)
 
     @staticmethod
     def get_name(msg_type):
@@ -71,8 +71,6 @@ class MsgType:
             return "NOT_READY"
         elif msg_type == MsgType.START:
             return "START"
-        elif msg_type == MsgType.END:
-            return "END"
         elif msg_type == MsgType.SNAKE_UPDATE:
             return "SNAKE_UPDATE"
         elif msg_type == MsgType.CHAT:
