@@ -31,51 +31,13 @@ from . import net
 from ..test import debug
 from ..enums import GameState, MsgType
 
-class MainServer:
+class Server:
     def __init__(self):
-        self.__lobbies = []
+        self.connect_port = net.init_server_socket((cfg.BIND_ADDR, cfg.BIND_PORT)) # port = 0 will use random port
 
-    def start(self):
-        debug.init_debug('MainServer', cfg.PRINT_DEBUG, cfg.PRINT_ERROR, cfg.PRINT_NETMSG)
+        self.server_state = GameState.LOBBY
 
-        # start lobbies as separate processes
-        for i in range(1, cfg.NUM_LOBBIES + 1):
-            lobby = LobbyServer(i)
-            pid = os.fork()
-            if pid == 0:
-                lobby.start()
-                sys.exit(0)
-            self.__lobbies.append(lobby)
-
-        net.init_server_socket(cfg.BIND_ADDR)
-
-        print(f'Main server has started on port {cfg.BIND_ADDR[1]}. Waiting for clients...')
-
-        try:
-            while True:
-                net.wait_for_input(self)
-        except Exception as ex:
-            debug.print_err(str(ex))
-        finally:
-            net.close_socket()
-
-    def handle_net_message(self, address, msg_type, msg_body):
-        if msg_type == MsgType.HELLO:
-            net.send_motd(address, cfg.MOTD)
-        elif msg_type == MsgType.LOBBY_REQ:
-            net.send_lobby_list(address, self.__lobbies)
-
-class LobbyServer(MainServer):
-    def __init__(self, lobbyNum):
-        MainServer.__init__(self)
-
-        # unique server ID #
-        self.lobby_num = lobbyNum
-        self.connect_port = net.init_server_socket((cfg.BIND_ADDR[0], 0)) # port = 0 will use random port
-
-        self.server_state = None
-
-        # activePlayers maps net addresses to tuples of (r, s) where:
+        # self.active_players maps net addresses to tuples of (r, s) where:
         #   r = ready status (MsgType.{NOT_,}READY)
         #   s = snake id when a game is running
         self.active_players = dict()
@@ -83,11 +45,9 @@ class LobbyServer(MainServer):
         self.game = None
 
     def start(self):
-        debug.init_debug('LobbyServer', cfg.PRINT_DEBUG, cfg.PRINT_ERROR, cfg.PRINT_NETMSG)
+        debug.init_debug('Server', cfg.PRINT_DEBUG, cfg.PRINT_ERROR, cfg.PRINT_NETMSG)
 
-        print(f'Lobby server {self.lobby_num} has started on port {self.connect_port}. Waiting for clients...')
-
-        self._start_lobby_mode()
+        print(f'Server has started on port {cfg.BIND_PORT}. Waiting for clients...')
 
         tick_time = 0.0
 
@@ -113,10 +73,12 @@ class LobbyServer(MainServer):
                                 break
                             #TODO does this have the correct indentation?
                             else:
-                                self._end_game_mode()
+                                for addr in self.active_players:
+                                    net.send_lobby_join_request(addr)
+
                                 self._start_lobby_mode()
         except Exception as ex:
-            debug.print_err(f'{self.lobby_num}: {ex}')
+            debug.print_err(str(ex))
         finally:
             net.close_socket()
 
@@ -142,7 +104,7 @@ class LobbyServer(MainServer):
                         self._start_game_mode()
                 elif msg_type == MsgType.NOT_READY:
                     self.active_players[address] = (MsgType.NOT_READY, snake_id)
-        else:  # address not in self.activePlayers
+        else:  # address not in self.active_players
             if self.server_state == GameState.LOBBY:
                 if msg_type == MsgType.LOBBY_JOIN:
                     if len(self.active_players) < 4:
@@ -163,8 +125,13 @@ class LobbyServer(MainServer):
                 for snake_id, snake in self.game.snakes.items():
                     net.send_snake_update(addr, self.game.tick_num, snake_id, snake)
 
+    def handle_input(self):
+        pass
+
     def _start_lobby_mode(self):
         self.server_state = GameState.LOBBY
+
+        self.game = None
 
     def _start_game_mode(self):
         self.server_state = GameState.GAME
@@ -182,9 +149,3 @@ class LobbyServer(MainServer):
 
         for addr in self.active_players:
             net.send_start_message(addr)
-
-    def _end_game_mode(self):
-        for addr in self.active_players:
-            net.send_end_message(addr)
-
-        self.game = None

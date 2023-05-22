@@ -26,21 +26,13 @@ class Dir:
     Up, Down, Left, Right = range(4)
 
 class GameState:
-    MOTD, LOBBY, GAME_SETUP, GAME, GAME_OVER = range(5)
+    LOBBY, GAME = range(2)
 
 class MsgFmt:
     # net message header
     # B: message type
     # H: length of message (including header)
     HDR = '!BH'
-
-    # number of lobbies
-    LBY_CNT = '!B'
-
-    # info for single lobby
-    # B: lobby number
-    # H: port number
-    LBY = '!BH'
 
     # snake update message (header)
     # I: tick num (game time elapsed)
@@ -62,21 +54,13 @@ class MsgFmt:
 class MsgType:
     """Enum for Snake network messages"""
 
-    NONE, HELLO, MOTD, LOBBY_REQ, LOBBY_REP, LOBBY_JOIN, LOBBY_QUIT, \
-       READY, NOT_READY, START, END, SNAKE_UPDATE, CHAT, SETUP, INPUT = range(15)
+    MOTD, LOBBY_JOIN, LOBBY_QUIT, \
+       READY, NOT_READY, START, SNAKE_UPDATE, CHAT, SETUP, INPUT = range(10)
 
     @staticmethod
     def get_name(msg_type):
-        if msg_type == MsgType.NONE:
-            return "NONE"
-        elif msg_type == MsgType.HELLO:
-            return "HELLO"
-        elif msg_type == MsgType.MOTD:
+        if msg_type == MsgType.MOTD:
             return "MOTD"
-        elif msg_type == MsgType.LOBBY_REQ:
-            return "LOBBY_REQ"
-        elif msg_type == MsgType.LOBBY_REP:
-            return "LOBBY_REP"
         elif msg_type == MsgType.LOBBY_JOIN:
             return "LOBBY_JOIN"
         elif msg_type == MsgType.LOBBY_QUIT:
@@ -87,8 +71,6 @@ class MsgType:
             return "NOT_READY"
         elif msg_type == MsgType.START:
             return "START"
-        elif msg_type == MsgType.END:
-            return "END"
         elif msg_type == MsgType.SNAKE_UPDATE:
             return "SNAKE_UPDATE"
         elif msg_type == MsgType.CHAT:

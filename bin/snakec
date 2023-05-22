@@ -30,4 +30,4 @@ if __name__ == '__main__':
     # run set_path() from other script without .py extension
     imp.load_source('snakes_module', './snakes').set_path()
 
-    client.start()
+    client.Client().start()

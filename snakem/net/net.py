@@ -60,9 +60,9 @@ def wait_for_input(handler, do_block=True):
     else:
         readable, writable, exceptional = select.select([_sock, sys.stdin], [], [], TIMEOUT)
 
-    if handler.handle_input is not None and sys.stdin in readable:
+    if sys.stdin in readable:
         handler.handle_input()
-    elif handler.handle_net_message is not None and _sock in readable:
+    elif _sock in readable:
         address, msg_type, msg_body = receive_message()
         handler.handle_net_message(address, msg_type, msg_body)
 
@@ -100,34 +100,13 @@ def get_addl_info_for_debug(msg_type, msg_body):
     return None
 
 def send_hello_message(address):
-    send_message(address, MsgType.HELLO)
+    send_message(address, MsgType.MOTD)
 
 def send_motd(address, motd):
     send_message(address, MsgType.MOTD, str.encode(motd))
 
 def send_quit_message(address):
     send_message(address, MsgType.LOBBY_QUIT)
-
-def send_lobby_list_request(address):
-    send_message(address, MsgType.LOBBY_REQ)
-
-def send_lobby_list(address, lobbies):
-    buf = pack(MsgFmt.LBY_CNT, len(lobbies))
-    for lobby in lobbies:
-        buf += pack(MsgFmt.LBY, lobby.lobby_num, lobby.connect_port)
-
-    send_message(address, MsgType.LOBBY_REP, buf)
-
-def unpack_lobby_list(msg_body):
-    lobby_count = unpack(MsgFmt.LBY_CNT, msg_body[:calcsize(MsgFmt.LBY_CNT)])[0]
-    packed_lobbies = msg_body[calcsize(MsgFmt.LBY_CNT):]
-
-    lobby_list = []
-    size = calcsize(MsgFmt.LBY)
-    for i in range(lobby_count):
-        lobby_list.append(unpack(MsgFmt.LBY, packed_lobbies[i * size:(i + 1) * size]))
-
-    return lobby_list
 
 def send_snake_update(address, tick, snake_id, snake):
     #TODO don't exceed MAX_MSG_SIZE (without breaking the game--allow splitting an update or increase MAX_MSG_SIZE)
