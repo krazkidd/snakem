@@ -23,35 +23,33 @@
 
 import sys
 
-import curses.ascii
-
-from ..config import client as cfg
-
-from ..game import display, game
-from . import net
+from ..config import client as config
+from ..game import game, display
 from ..test import debug
 from ..enums import GameState, MsgType, Dir
+
+from . import net
 
 class Client:
     def __init__(self):
         self._motd = None
 
         # the lobby server address
-        self._lobby_addr = (cfg.SERVER_HOST, cfg.SERVER_PORT)
+        self._lobby_addr = (config.SERVER_HOST, config.SERVER_PORT)
 
         self._client_state  = GameState.LOBBY
 
         self._game_instance = None
 
     def start(self):
-        debug.init_debug('Client', cfg.PRINT_DEBUG, cfg.PRINT_ERROR, cfg.PRINT_NETMSG)
+        debug.init_debug('Client', config.PRINT_DEBUG, config.PRINT_ERROR, config.PRINT_NETMSG)
 
         net.init_client_socket()
         #TODO don't pass self._start_with_curses method as a delegate (use an interface)
         display.init_client_window(self._start_with_curses)
 
     def _start_with_curses(self):
-        display.show_message(f'Contacting server at {cfg.SERVER_HOST}:{cfg.SERVER_PORT} . . .')
+        display.show_message(f'Contacting server at {config.SERVER_HOST}:{config.SERVER_PORT} . . .')
 
         tick_time = 0.0
 
@@ -62,8 +60,8 @@ class Client:
                 if self._client_state == GameState.GAME:
                     tick_time += net.TIMEOUT
                     #TODO get STEP_TIME from server during game setup
-                    if tick_time >= cfg.STEP_TIME:
-                        tick_time -= cfg.STEP_TIME
+                    if tick_time >= config.STEP_TIME:
+                        tick_time -= config.STEP_TIME
                         display.show_game(self._game_instance)
         finally:
             if self._lobby_addr:
@@ -101,25 +99,25 @@ class Client:
         input_char = display.get_key()
 
         if self._client_state == GameState.LOBBY:
-            if input_char in cfg.KEYS_LOBBY_QUIT:
+            if input_char in config.KEYS_LOBBY_QUIT:
                 sys.exit()
-            elif input_char in cfg.KEYS_LOBBY_REFRESH:
+            elif input_char in config.KEYS_LOBBY_REFRESH:
                 net.send_hello_message(self._lobby_addr)
                 net.send_lobby_join_request(self._lobby_addr)
-            elif input_char in cfg.KEYS_LOBBY_READY:
+            elif input_char in config.KEYS_LOBBY_READY:
                 net.send_ready_message(self._lobby_addr)
         elif self._client_state == GameState.GAME:
-            if input_char in cfg.KEYS_GAME_QUIT:
+            if input_char in config.KEYS_GAME_QUIT:
                 #TODO make it harder to quit running game
                 net.send_quit_message(self._lobby_addr)
                 self._start_lobby_mode()
-            elif input_char in cfg.KEYS_MV_LEFT:
+            elif input_char in config.KEYS_MV_LEFT:
                 net.send_input_message(self._lobby_addr, Dir.Left)
-            elif input_char in cfg.KEYS_MV_DOWN:
+            elif input_char in config.KEYS_MV_DOWN:
                 net.send_input_message(self._lobby_addr, Dir.Down)
-            elif input_char in cfg.KEYS_MV_UP:
+            elif input_char in config.KEYS_MV_UP:
                 net.send_input_message(self._lobby_addr, Dir.Up)
-            elif input_char in cfg.KEYS_MV_RIGHT:
+            elif input_char in config.KEYS_MV_RIGHT:
                 net.send_input_message(self._lobby_addr, Dir.Right)
 
     def _start_lobby_mode(self):

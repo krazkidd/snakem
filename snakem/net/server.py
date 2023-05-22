@@ -21,19 +21,16 @@
 #
 # *************************************************************************
 
-import os
-import sys
-
-from ..config import server as cfg
-
+from ..config import server as config
 from ..game import game
-from . import net
 from ..test import debug
 from ..enums import GameState, MsgType
 
+from . import net
+
 class Server:
     def __init__(self):
-        self.connect_port = net.init_server_socket((cfg.BIND_ADDR, cfg.BIND_PORT)) # port = 0 will use random port
+        self.connect_port = net.init_server_socket((config.BIND_ADDR, config.BIND_PORT)) # port = 0 will use random port
 
         self.server_state = GameState.LOBBY
 
@@ -45,9 +42,9 @@ class Server:
         self.game = None
 
     def start(self):
-        debug.init_debug('Server', cfg.PRINT_DEBUG, cfg.PRINT_ERROR, cfg.PRINT_NETMSG)
+        debug.init_debug('Server', config.PRINT_DEBUG, config.PRINT_ERROR, config.PRINT_NETMSG)
 
-        print(f'Server has started on port {cfg.BIND_PORT}. Waiting for clients...')
+        print(f'Server has started on port {config.BIND_PORT}. Waiting for clients...')
 
         tick_time = 0.0
 
@@ -57,8 +54,8 @@ class Server:
 
                 if self.server_state == GameState.GAME:
                     tick_time += net.TIMEOUT
-                    if tick_time >= cfg.STEP_TIME:
-                        tick_time -= cfg.STEP_TIME
+                    if tick_time >= config.STEP_TIME:
+                        tick_time -= config.STEP_TIME
                         self.game.tick()
 
                         for addr in self.active_players:
@@ -136,7 +133,7 @@ class Server:
     def _start_game_mode(self):
         self.server_state = GameState.GAME
 
-        self.game = game.Game(cfg.WIN_WIDTH, cfg.WIN_HEIGHT)
+        self.game = game.Game(config.WIN_WIDTH, config.WIN_HEIGHT)
 
         for addr, player_tuple in self.active_players.items():
             self.active_players[addr] = (player_tuple[0], self.game.spawn_new_snake())
