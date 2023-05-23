@@ -101,8 +101,8 @@ class Game:
         snake.is_alive = is_alive
         snake.body = body
 
-    def update_pellet(self, tick, pellet_id, pos):
+    def update_pellet(self, tick, pellet_id, pos_x, pos_y):
         if not self.pellet:
             self.pellet = Pellet(1, 1, self.width - 1 - 1, self.height - 1 - 1)
 
-        self.pellet.pos = pos
+        self.pellet.pos = (pos_x, pos_y)

@@ -115,7 +115,7 @@ def send_pellet_update(address, tick, pellet_id, pellet):
 def unpack_pellet_update(msg_body):
     tick, pellet_id, pos_x, pos_y = unpack(MsgFmt.PELLET_UPDATE, msg_body[:calcsize(MsgFmt.PELLET_UPDATE)])
 
-    return tick, pellet_id, (pos_x, pos_y)
+    return tick, pellet_id, pos_x, pos_y
 
 def send_snake_update(address, tick, snake_id, snake):
     #TODO don't exceed MAX_MSG_SIZE (without breaking the game--allow splitting an update or increase MAX_MSG_SIZE)
