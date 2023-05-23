@@ -1,0 +1,18 @@
+{
+  "configurations": [
+    {
+      "name": "snakem server",
+      "type": "python",
+      "request": "launch",
+      "module": "snakem.net.server",
+      "justMyCode": true
+    },
+    {
+      "name": "snakem client",
+      "type": "python",
+      "request": "launch",
+      "module": "snakem.net.client",
+      "justMyCode": true
+    }
+  ]
+}
