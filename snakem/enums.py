@@ -52,7 +52,7 @@ class MsgFmt:
     # i: y position
     SNAKE_UPDATE_BDY = '!ii'
 
-    # pellet update message (header)
+    # pellet update message
     # I: tick num (game time elapsed)
     # i: pellet ID
     # i: x position
