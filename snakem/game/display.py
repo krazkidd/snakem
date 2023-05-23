@@ -65,12 +65,20 @@ def show_lobby(motd):
         show_message('Waiting for game to start . . .')
 
 def show_game(game):
+    height, width = get_window_size()
+
     _stdscr.erase()
 
-    _stdscr.border()
+    _stdscr.hline(0, 0, curses.ACS_HLINE, min(width, game.width) - 1)
+    _stdscr.vline(0, 0, curses.ACS_VLINE, min(height, game.height) - 1)
+
+    if game.height <= height:
+        _stdscr.hline(game.height, 0, curses.ACS_HLINE, min(width, game.width) - 1)
+
+    if game.width <= width:
+        _stdscr.vline(0, game.width - 1, curses.ACS_VLINE, min(height, game.height) - 1)
 
     debug_str = ''
-    height, width = _stdscr.getmaxyx()
     for snake in game.snakes.values():
         if len(debug_str) > 0:
             debug_str += ', '
@@ -97,7 +105,7 @@ def show_debug(msg=None):
     global _last_debug_message
 
     if debug.DO_PRINT_DEBUG:
-        height, width = _stdscr.getmaxyx()
+        height, width = get_window_size()
         if msg and len(msg) > 0:
             msg += ' '
             msg = msg[:width - 1]
@@ -111,7 +119,7 @@ def show_debug_in_game(msg=None):
     global _last_debug_message
 
     if debug.DO_PRINT_DEBUG:
-        height, width = _stdscr.getmaxyx()
+        height, width = get_window_size()
         if msg and len(msg) > 0:
             msg = ' ' + msg + ' '
             # truncate very long messages
