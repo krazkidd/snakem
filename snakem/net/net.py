@@ -24,12 +24,12 @@
 import socket
 import sys
 import select
+import logging
 
 from struct import pack
 from struct import unpack
 from struct import calcsize
 
-from ..test import debug
 from ..enums import MsgType, MsgFmt
 
 MAX_MSG_SIZE = 1024
@@ -69,12 +69,16 @@ def wait_for_input(handler, do_block=True):
 
 def send_message(address, msg_type, msg_body=None):
     if msg_body:
-        buf = pack(MsgFmt.HDR, msg_type, calcsize(MsgFmt.HDR) + len(msg_body))
+        msg_len = len(msg_body)
+
+        buf = pack(MsgFmt.HDR, msg_type, calcsize(MsgFmt.HDR) + msg_len)
         buf += msg_body
     else:
+        msg_len = 0
+
         buf = pack(MsgFmt.HDR, msg_type, calcsize(MsgFmt.HDR))
 
-    debug.print_net_msg_sent(address, msg_type, msg_body, get_addl_info_for_debug(msg_type, msg_body))
+    logging.debug('NETMSG (to %s): <%s, length %s>', address[0], MsgType.get_name(msg_type), msg_len)
 
     _sock.sendto(buf, address)
 
@@ -88,17 +92,9 @@ def receive_message():
     else:
         msg_body = None
 
-    debug.print_net_msg_received(address, msg_type, msg_body, get_addl_info_for_debug(msg_type, msg_body))
+    logging.debug('NETMSG (from %s): <%s, length %s>', address[0], MsgType.get_name(msg_type), msg_len)
 
     return address, msg_type, msg_body
-
-def get_addl_info_for_debug(msg_type, msg_body):
-    if msg_type == MsgType.SNAKE_UPDATE:
-        tick, snake_id, heading, is_alive, body = unpack_snake_update(msg_body)
-        x_pos, y_pos = body[0]
-        return '(' + str(x_pos) + ', ' + str(y_pos) + ')'
-
-    return None
 
 def send_hello_message(address):
     send_message(address, MsgType.MOTD)

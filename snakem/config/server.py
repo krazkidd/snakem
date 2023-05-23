@@ -12,9 +12,3 @@ WIN_WIDTH, WIN_HEIGHT = 60, 35
 
 # how often to advance the game state
 STEP_TIME = 0.1
-
-################ DEBUG ###############
-
-PRINT_DEBUG = True
-PRINT_ERROR = True
-PRINT_NETMSG = True

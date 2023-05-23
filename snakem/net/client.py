@@ -22,10 +22,10 @@
 # *************************************************************************
 
 import sys
+import logging
 
 from ..config import client as config
 from ..game import game, display
-from ..test import debug
 from ..enums import GameState, MsgType, Dir
 
 from . import net
@@ -42,7 +42,7 @@ class Client:
         self._game_instance = None
 
     def start(self):
-        debug.init_debug('Client', config.PRINT_DEBUG, config.PRINT_ERROR, config.PRINT_NETMSG)
+        logging.info('Contacting %s on port %s.', config.SERVER_HOST, config.SERVER_PORT)
 
         net.init_client_socket()
         #TODO don't pass self._start_with_curses method as a delegate (use an interface)
@@ -69,8 +69,6 @@ class Client:
             net.close_socket()
 
     def handle_net_message(self, address, msg_type, msg_body):
-        display.show_debug(debug.get_net_msg(address, 'from', msg_type, msg_body, net.get_addl_info_for_debug(msg_type, msg_body)))
-
         if address == self._lobby_addr:
             if self._client_state == GameState.LOBBY:
                 if msg_type == MsgType.LOBBY_JOIN:
@@ -141,4 +139,7 @@ class Client:
         display.show_game(self._game_instance)
 
 if __name__ == '__main__':
+    #TODO add timestamp (with format)
+    #logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
+
     Client().start()
