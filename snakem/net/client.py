@@ -116,13 +116,13 @@ class Client:
                 net.send_quit_message(self._lobby_addr)
                 self._start_lobby_mode()
             elif input_char in config.KEYS_MV_LEFT:
-                net.send_input_message(self._lobby_addr, Dir.Left)
+                net.send_input_message(self._lobby_addr, Dir.LEFT)
             elif input_char in config.KEYS_MV_DOWN:
-                net.send_input_message(self._lobby_addr, Dir.Down)
+                net.send_input_message(self._lobby_addr, Dir.DOWN)
             elif input_char in config.KEYS_MV_UP:
-                net.send_input_message(self._lobby_addr, Dir.Up)
+                net.send_input_message(self._lobby_addr, Dir.UP)
             elif input_char in config.KEYS_MV_RIGHT:
-                net.send_input_message(self._lobby_addr, Dir.Right)
+                net.send_input_message(self._lobby_addr, Dir.RIGHT)
 
     def _start_lobby_mode(self):
         self._client_state = GameState.LOBBY

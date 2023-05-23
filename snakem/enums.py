@@ -21,12 +21,24 @@
 #
 # *************************************************************************
 
-class Dir:
-    """An enum of the cardinal directions."""
-    Up, Down, Left, Right = range(4)
+from enum import Enum
+from enum import IntEnum
 
-class GameState:
-    LOBBY, GAME = range(2)
+class Dir(Enum):
+    """An enum of the cardinal directions."""
+
+    #TODO use auto()?
+
+    UP = 0
+    DOWN = 1
+    LEFT = 2
+    RIGHT = 3
+
+class GameState(Enum):
+    #TODO use auto()?
+
+    LOBBY = 0
+    GAME = 1
 
 class MsgFmt:
     # net message header
@@ -63,31 +75,19 @@ class MsgFmt:
     # B: new heading
     PLAYER_INPUT = '!B'
 
-class MsgType:
+class MsgType(Enum):
     """Enum for Snake network messages"""
 
-    MOTD, LOBBY_JOIN, LOBBY_QUIT, \
-       READY, NOT_READY, START, SNAKE_UPDATE, PELLET_UPDATE, CHAT, SETUP, INPUT = range(11)
+    #TODO use auto()?
 
-    @staticmethod
-    def get_name(msg_type):
-        if msg_type == MsgType.MOTD:
-            return "MOTD"
-        elif msg_type == MsgType.LOBBY_JOIN:
-            return "LOBBY_JOIN"
-        elif msg_type == MsgType.LOBBY_QUIT:
-            return "LOBBY_QUIT"
-        elif msg_type == MsgType.READY:
-            return "READY"
-        elif msg_type == MsgType.NOT_READY:
-            return "NOT_READY"
-        elif msg_type == MsgType.START:
-            return "START"
-        elif msg_type == MsgType.SNAKE_UPDATE:
-            return "SNAKE_UPDATE"
-        elif msg_type == MsgType.CHAT:
-            return "CHAT"
-        elif msg_type == MsgType.SETUP:
-            return "SETUP"
-        elif msg_type == MsgType.INPUT:
-            return "INPUT"
+    MOTD = 0
+    LOBBY_JOIN = 1
+    LOBBY_QUIT = 2
+    READY = 3
+    NOT_READY = 4
+    START = 5
+    SNAKE_UPDATE = 6
+    PELLET_UPDATE = 7
+    CHAT = 8
+    SETUP = 9
+    INPUT = 10

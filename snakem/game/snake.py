@@ -39,13 +39,13 @@ class Snake:
 
         x_pos, y_pos = head_pos
         for i in range(length):
-            if heading == Dir.Right:
+            if heading == Dir.RIGHT:
                 self.body.append((x_pos - i, y_pos))
-            elif heading == Dir.Left:
+            elif heading == Dir.LEFT:
                 self.body.append((x_pos + i, y_pos))
-            elif heading == Dir.Up:
+            elif heading == Dir.UP:
                 self.body.append((x_pos, y_pos + i))
-            elif heading == Dir.Down:
+            elif heading == Dir.DOWN:
                 self.body.append((x_pos, y_pos - i))
 
         self.heading = heading
@@ -80,13 +80,13 @@ class Snake:
 
             # check the heading of the snake and move the
             # head's position accordingly
-            if self.heading == Dir.Right:
+            if self.heading == Dir.RIGHT:
                 self.body.appendleft((x_pos + 1, y_pos))
-            elif self.heading == Dir.Left:
+            elif self.heading == Dir.LEFT:
                 self.body.appendleft((x_pos - 1, y_pos))
-            elif self.heading == Dir.Up:
+            elif self.heading == Dir.UP:
                 self.body.appendleft((x_pos, y_pos - 1))
-            elif self.heading == Dir.Down:
+            elif self.heading == Dir.DOWN:
                 self.body.appendleft((x_pos, y_pos + 1))
 
             # pop the last body segment unless the snake is supposed to grow
@@ -120,8 +120,8 @@ class Snake:
             return False
 
         # skip if move is parallel
-        if (self.heading in (Dir.Up, Dir.Down) and new_heading in (Dir.Up, Dir.Down)) \
-           or (self.heading in (Dir.Left, Dir.Right) and new_heading in (Dir.Left, Dir.Right)):
+        if (self.heading in (Dir.UP, Dir.DOWN) and new_heading in (Dir.UP, Dir.DOWN)) \
+           or (self.heading in (Dir.LEFT, Dir.RIGHT) and new_heading in (Dir.LEFT, Dir.RIGHT)):
             return False
 
         self.heading = new_heading

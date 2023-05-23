@@ -30,7 +30,7 @@ from struct import pack
 from struct import unpack
 from struct import calcsize
 
-from ..enums import MsgType, MsgFmt
+from ..enums import MsgType, MsgFmt, Dir
 
 MAX_MSG_SIZE = 1024
 
@@ -71,20 +71,22 @@ def send_message(address, msg_type, msg_body=None):
     if msg_body:
         msg_len = len(msg_body)
 
-        buf = pack(MsgFmt.HDR, msg_type, calcsize(MsgFmt.HDR) + msg_len)
+        buf = pack(MsgFmt.HDR, msg_type.value, calcsize(MsgFmt.HDR) + msg_len)
         buf += msg_body
     else:
         msg_len = 0
 
-        buf = pack(MsgFmt.HDR, msg_type, calcsize(MsgFmt.HDR))
+        buf = pack(MsgFmt.HDR, msg_type.value, calcsize(MsgFmt.HDR))
 
-    logging.debug('NETMSG (to %s): <%s, length %s>', address[0], MsgType.get_name(msg_type), msg_len)
+    logging.debug('NETMSG (to %s): <%s, length %s>', address[0], msg_type.name, msg_len)
 
     _sock.sendto(buf, address)
 
 def receive_message():
     msg, address = _sock.recvfrom(MAX_MSG_SIZE)
-    msg_type, msg_len = unpack(MsgFmt.HDR, msg[:calcsize(MsgFmt.HDR)])
+    msg_type_, msg_len = unpack(MsgFmt.HDR, msg[:calcsize(MsgFmt.HDR)])
+
+    msg_type = MsgType(msg_type_)
 
     #TODO verify msg size!
     if len(msg) > calcsize(MsgFmt.HDR):
@@ -92,7 +94,7 @@ def receive_message():
     else:
         msg_body = None
 
-    logging.debug('NETMSG (from %s): <%s, length %s>', address[0], MsgType.get_name(msg_type), msg_len)
+    logging.debug('NETMSG (from %s): <%s, length %s>', address[0], msg_type.name, msg_len)
 
     return address, msg_type, msg_body
 
@@ -115,7 +117,7 @@ def unpack_pellet_update(msg_body):
 
 def send_snake_update(address, tick, snake_id, snake):
     #TODO don't exceed MAX_MSG_SIZE (without breaking the game--allow splitting an update or increase MAX_MSG_SIZE)
-    buf = pack(MsgFmt.SNAKE_UPDATE_HDR, tick, snake_id, snake.heading, snake.is_alive, len(snake.body))
+    buf = pack(MsgFmt.SNAKE_UPDATE_HDR, tick, snake_id, snake.heading.value, snake.is_alive, len(snake.body))
     for pos in snake.body:
         buf += pack(MsgFmt.SNAKE_UPDATE_BDY, pos[0], pos[1])
 
@@ -130,7 +132,7 @@ def unpack_snake_update(msg_body):
     for i in range(length):
         body.append(unpack(MsgFmt.SNAKE_UPDATE_BDY, body_buf[i * size:(i + 1) * size]))
 
-    return tick, snake_id, heading, is_alive, body
+    return tick, snake_id, Dir(heading), is_alive, body
 
 def send_lobby_join_request(address):
     send_message(address, MsgType.LOBBY_JOIN)
@@ -150,7 +152,7 @@ def unpack_start_message(msg_body):
     return width, height
 
 def send_input_message(address, heading):
-    send_message(address, MsgType.INPUT, pack(MsgFmt.PLAYER_INPUT, heading))
+    send_message(address, MsgType.INPUT, pack(MsgFmt.PLAYER_INPUT, heading.value))
 
 def unpack_input_message(msg_body):
-    return int(unpack(MsgFmt.PLAYER_INPUT, msg_body)[0])
+    return Dir(unpack(MsgFmt.PLAYER_INPUT, msg_body)[0])

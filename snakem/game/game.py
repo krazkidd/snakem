@@ -72,9 +72,8 @@ class Game:
             (self.width - self.width // 4, self.height - self.height // 4),
             (self.width // 4, self.height - self.height // 4)
         ]
-        start_dir = [Dir.Right, Dir.Left, Dir.Left, Dir.Right]
 
-        self.snakes[snake_id] = Snake(start_pos[snake_id], start_dir[snake_id])
+        self.snakes[snake_id] = Snake(start_pos[snake_id], Dir(snake_id % 4))
 
         return snake_id
 
