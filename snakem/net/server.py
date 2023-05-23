@@ -21,9 +21,10 @@
 #
 # *************************************************************************
 
+import logging
+
 from ..config import server as config
 from ..game import game
-from ..test import debug
 from ..enums import GameState, MsgType
 
 from . import net
@@ -42,9 +43,7 @@ class Server:
         self.game = None
 
     def start(self):
-        debug.init_debug('Server', config.PRINT_DEBUG, config.PRINT_ERROR, config.PRINT_NETMSG)
-
-        print(f'Server has started on port {config.BIND_PORT}. Waiting for clients...')
+        logging.info('Listening on port %s.', config.BIND_PORT)
 
         tick_time = 0.0
 
@@ -60,7 +59,7 @@ class Server:
 
                         for addr in self.active_players:
                             for snake_id, snake in self.game.snakes.items():
-                                debug.print_debug('(' + str(snake.body[0][0]) + ', ' + str(snake.body[0][1]) + ')')
+                                logging.debug('(%s, %s)', snake.body[0][0], snake.body[0][1])
                                 net.send_snake_update(addr, self.game.tick_num, snake_id, snake)
 
                         # end game when all snakes are dead
@@ -73,8 +72,8 @@ class Server:
                                 net.send_lobby_join_request(addr)
 
                             self._start_lobby_mode()
-        except Exception as ex:
-            debug.print_err(str(ex))
+        except Exception:
+            logging.exception('Unknown exception.')
         finally:
             net.close_socket()
 
@@ -151,4 +150,7 @@ class Server:
             net.send_start_message(addr, self.game.width, self.game.height)
 
 if __name__ == '__main__':
+    #TODO add timestamp (with format)
+    #logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
+
     Server().start()

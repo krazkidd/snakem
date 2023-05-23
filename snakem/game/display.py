@@ -23,8 +23,7 @@
 
 import curses
 import os
-
-from ..test import debug
+import logging
 
 _stdscr = None
 
@@ -105,7 +104,7 @@ def show_game(game):
 def show_debug(msg=None):
     global _last_debug_message
 
-    if debug.DO_PRINT_DEBUG:
+    if logging.getLogger().isEnabledFor(logging.DEBUG):
         height, width = get_window_size()
         if msg and len(msg) > 0:
             msg += ' '
@@ -119,7 +118,7 @@ def show_debug(msg=None):
 def show_debug_in_game(msg=None):
     global _last_debug_message
 
-    if debug.DO_PRINT_DEBUG:
+    if logging.getLogger().isEnabledFor(logging.DEBUG):
         height, width = get_window_size()
         if msg and len(msg) > 0:
             msg = ' ' + msg + ' '
@@ -132,7 +131,7 @@ def show_debug_in_game(msg=None):
 
 def get_window_size():
     height, width = _stdscr.getmaxyx()
-    if debug.DO_PRINT_DEBUG:
+    if logging.getLogger().isEnabledFor(logging.DEBUG):
         height -= 1
     return height, width
 

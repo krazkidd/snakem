@@ -21,9 +21,3 @@ KEYS_MV_UP = (ord('W'), ord('w'), ord('K'), ord('k',), curses.KEY_UP, )
 KEYS_MV_LEFT = (ord('A'), ord('a'), ord('H'), ord('h'), curses.KEY_LEFT, )
 KEYS_MV_DOWN = (ord('S'), ord('s'), ord('J'), ord('j',), curses.KEY_DOWN, )
 KEYS_MV_RIGHT = (ord('D'), ord('d'), ord('L'), ord('l',), curses.KEY_RIGHT, )
-
-################ DEBUG ###############
-
-PRINT_DEBUG = True
-PRINT_ERROR = True
-PRINT_NETMSG = False
