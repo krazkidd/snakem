@@ -88,8 +88,8 @@ class Game:
                 if self.pellet.pos in snake.body:
                     self.pellet.randomize_position()
                     break
-                else:
-                    is_good_pos = True
+            else:
+                is_good_pos = True
 
     def update_snake(self, tick, snake_id, heading, is_alive, body):
         if snake_id not in self.snakes:
