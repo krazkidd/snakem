@@ -14,17 +14,16 @@ License: GPLv3 (see LICENSE.md file)
 
 ### Features:
 
-- Multiple lobbies per server
 - ...
 
 ### Requires:
 
-- POSIX OS (because of os.fork() and curses)
+- POSIX OS (terminal with curses support is required)
 - Python 3.11 or later
 
 ### Starting the game:
 
-1. Open a terminal and navigate to bin/.
-2. Run ./snakes. Confirm the main and lobby servers have started.
-3. In another terminal, navigate to bin/.
-4. Run ./snakec.
+1. Open a terminal and navigate to the source root folder.
+2. Run `$ python3 -m snakem.net.server` to start the server.
+3. In another terminal, navigate to the source root folder.
+4. Run `$ python3 -m snakem.net.client` to start the client.
