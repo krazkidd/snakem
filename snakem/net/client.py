@@ -79,7 +79,9 @@ class Client:
                     display.show_debug('Lobby rejected your join request.')
                     self._start_lobby_mode()
                 elif msg_type == MsgType.START:
-                    self._start_game_mode()
+                    width, height = net.unpack_start_message(msg_body)
+
+                    self._start_game_mode(width, height)
                 elif msg_type == MsgType.MOTD:
                     self._motd = bytes.decode(msg_body)
 
@@ -131,12 +133,9 @@ class Client:
 
         display.show_lobby(self._motd)
 
-    def _start_game_mode(self):
+    def _start_game_mode(self, width, height):
         self._client_state = GameState.GAME
 
-        #TODO get win width/height from server (and/or change display code to handle large maps)
-        #gameInstance = game.Game(WIN_WIDTH, WIN_HEIGHT)
-        height, width = display.get_window_size()
         self._game_instance = game.Game(width, height)
 
         display.show_game(self._game_instance)

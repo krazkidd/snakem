@@ -34,6 +34,11 @@ class MsgFmt:
     # H: length of message (including header)
     HDR = '!BH'
 
+    # start message
+    # i: window width
+    # i: window height
+    START = '!ii'
+
     # snake update message (header)
     # I: tick num (game time elapsed)
     # i: snake ID

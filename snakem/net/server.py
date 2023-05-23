@@ -98,7 +98,7 @@ class Server:
                         if player_tuple[0] != MsgType.READY:
                             break
                     else:
-                        self._start_game_mode()
+                        self._start_game_mode(config.WIN_WIDTH, config.WIN_HEIGHT)
                 elif msg_type == MsgType.NOT_READY:
                     self.active_players[address] = (MsgType.NOT_READY, snake_id)
         else:  # address not in self.active_players
@@ -132,10 +132,10 @@ class Server:
 
         self.game = None
 
-    def _start_game_mode(self):
+    def _start_game_mode(self, width, height):
         self.server_state = GameState.GAME
 
-        self.game = game.Game(config.WIN_WIDTH, config.WIN_HEIGHT)
+        self.game = game.Game(width, height)
 
         for addr, player_tuple in self.active_players.items():
             self.active_players[addr] = (player_tuple[0], self.game.spawn_new_snake())
@@ -149,7 +149,7 @@ class Server:
                 net.send_snake_update(addr, self.game.tick_num, snake_id, snake)
 
         for addr in self.active_players:
-            net.send_start_message(addr)
+            net.send_start_message(addr, self.game.width, self.game.height)
 
 if __name__ == '__main__':
     Server().start()

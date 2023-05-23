@@ -145,8 +145,13 @@ def send_ready_message(address):
 def send_setup_message(address):
     send_message(address, MsgType.SETUP)
 
-def send_start_message(address):
-    send_message(address, MsgType.START)
+def send_start_message(address, width, height):
+    send_message(address, MsgType.START, pack(MsgFmt.START, width, height))
+
+def unpack_start_message(msg_body):
+    width, height = unpack(MsgFmt.START, msg_body[:calcsize(MsgFmt.START)])
+
+    return width, height
 
 def send_input_message(address, heading):
     send_message(address, MsgType.INPUT, pack(MsgFmt.PLAYER_INPUT, heading))
