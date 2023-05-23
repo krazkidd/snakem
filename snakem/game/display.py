@@ -93,7 +93,8 @@ def show_game(game):
         debug_str += 'snake: ' + str(len(snake.body))
 
     if game.pellet is not None:
-        _stdscr.addch(game.pellet.pos[1], game.pellet.pos[0], ord('+'))
+        if 0 <= game.pellet.pos[0] <= width - 1 and 0 <= game.pellet.pos[1] <= height - 1:
+            _stdscr.addch(game.pellet.pos[1], game.pellet.pos[0], ord('+'))
 
     #TODO name the snakes and show score at the top?
     #ShowDebugInGame(debugStr)
