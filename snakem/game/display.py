@@ -111,6 +111,8 @@ def show_debug(msg: str | None = None) -> None:
     if logging.getLogger().isEnabledFor(logging.DEBUG):
         height, width = _stdscr.getmaxyx()
         if msg and len(msg) > 0:
+            logging.debug(msg)
+
             msg += ' '
             msg = msg[:width - 1]
             _last_debug_message = msg
@@ -125,6 +127,8 @@ def show_debug_in_game(msg: str | None = None) -> None:
     if logging.getLogger().isEnabledFor(logging.DEBUG):
         height, width = _stdscr.getmaxyx()
         if msg and len(msg) > 0:
+            logging.debug(msg)
+
             msg = ' ' + msg + ' '
             # truncate very long messages
             msg = msg[:width - 1 - 2] # - 2 because we start at cell 2
