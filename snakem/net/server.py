@@ -31,18 +31,18 @@ from . import net
 
 class Server:
     def __init__(self):
-        self.connect_port = net.init_server_socket((config.BIND_ADDR, config.BIND_PORT)) # port = 0 will use random port
+        self.connect_port: int = net.init_server_socket((config.BIND_ADDR, config.BIND_PORT)) # port = 0 will use random port
 
-        self.server_state = GameState.LOBBY
+        self.server_state: GameState = GameState.LOBBY
 
         # self.active_players maps net addresses to tuples of (r, s) where:
         #   r = ready status (MsgType.{NOT_,}READY)
         #   s = snake id when a game is running
-        self.active_players = dict()
+        self.active_players: dict[tuple[str, int], tuple[MsgType, int | None]] = dict()
 
-        self.game = None
+        self.game: game.Game
 
-    def start(self):
+    def start(self) -> None:
         logging.info('Listening on port %s.', config.BIND_PORT)
 
         tick_time = 0.0
@@ -77,7 +77,7 @@ class Server:
         finally:
             net.close_socket()
 
-    def handle_net_message(self, address, msg_type, msg_body):
+    def handle_net_message(self, address: tuple[str, int], msg_type: MsgType, msg_body: bytes) -> None:
         if address in self.active_players:
             if self.server_state == GameState.GAME:
                 self._handle_net_message_during_game(address, msg_type, msg_body)
@@ -108,11 +108,11 @@ class Server:
                     else:
                         net.send_quit_message(address)  # LOBBY_QUIT is used for join rejection
 
-    def _handle_net_message_during_game(self, address, msg_type, msg_body):
+    def _handle_net_message_during_game(self, address: tuple[str, int], msg_type: MsgType, msg_body: bytes) -> None:
         do_update_clients = False
 
         if msg_type == MsgType.INPUT:
-            self.game.snakes[self.active_players[address][1]].change_heading(net.unpack_input_message(msg_body))
+            self.game.snakes[self.active_players[address][1]].change_heading(net.unpack_input_message(msg_body)) # type: ignore
             do_update_clients = True
 
         if do_update_clients:
@@ -122,15 +122,13 @@ class Server:
                 for snake_id, snake in self.game.snakes.items():
                     net.send_snake_update(addr, self.game.tick_num, snake_id, snake)
 
-    def handle_input(self):
+    def handle_input(self) -> None:
         pass
 
-    def _start_lobby_mode(self):
+    def _start_lobby_mode(self) -> None:
         self.server_state = GameState.LOBBY
 
-        self.game = None
-
-    def _start_game_mode(self, width, height):
+    def _start_game_mode(self, width: int, height: int) -> None:
         self.server_state = GameState.GAME
 
         self.game = game.Game(width, height)

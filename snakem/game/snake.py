@@ -34,8 +34,8 @@ class Snake:
 
     """
 
-    def __init__(self, head_pos, heading, length=4):
-        self.body = deque()
+    def __init__(self, head_pos: tuple[int, int], heading: Dir, length: int = 4):
+        self.body: deque[tuple[int, int]] = deque()
 
         x_pos, y_pos = head_pos
         for i in range(length):
@@ -48,14 +48,14 @@ class Snake:
             elif heading == Dir.DOWN:
                 self.body.append((x_pos, y_pos - i))
 
-        self.heading = heading
-        self.is_alive = True
+        self.heading: Dir = heading
+        self.is_alive: bool = True
 
-        self.__next_heading = None
-        self.__heading_changed = False
-        self.__should_grow = False
+        self.__next_heading: Dir | None = None
+        self.__heading_changed: bool = False
+        self.__should_grow: bool = False
 
-    def grow(self):
+    def grow(self) -> None:
 
         """Grow the Snake one segment longer.
 
@@ -67,7 +67,7 @@ class Snake:
         # the last body segment won't be popped off
         self.__should_grow = True
 
-    def move(self):
+    def move(self) -> None:
 
         """Move (update) the snake's body.
 
@@ -101,7 +101,7 @@ class Snake:
 
             self.__heading_changed = False
 
-    def change_heading(self, new_heading):
+    def change_heading(self, new_heading: Dir) -> bool:
 
         """Tell the Snake the new direction to move in.
 
