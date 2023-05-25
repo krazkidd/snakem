@@ -27,3 +27,9 @@ License: GPLv3 (see LICENSE.md file)
 2. Run `$ python3 -m snakem.net.server` to start the server.
 3. In another terminal, navigate to the source root folder.
 4. Run `$ python3 -m snakem.net.client` to start the client.
+
+### Debugging the game:
+
+1. Install VS Code and the recommended extensions (see `.vscode/extensions.json`).
+2. In the Run and Debug view, launch **snakem server** or **snakem client**.
+3. Start the server or client as described in #starting-the-game.
