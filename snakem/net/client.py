@@ -45,6 +45,9 @@ class Client:
         logging.info('Contacting %s on port %s.', config.SERVER_HOST, config.SERVER_PORT)
 
         net.init_client_socket()
+        net.send_hello_message(self._lobby_addr)
+        net.send_lobby_join_request(self._lobby_addr)
+
         #TODO don't pass self._start_with_curses method as a delegate (use an interface)
         display.init_client_window(self._start_with_curses)
 
