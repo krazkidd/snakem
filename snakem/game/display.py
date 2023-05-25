@@ -109,7 +109,7 @@ def show_debug(msg: str | None = None) -> None:
     global _last_debug_message
 
     if logging.getLogger().isEnabledFor(logging.DEBUG):
-        height, width = get_window_size()
+        height, width = _stdscr.getmaxyx()
         if msg and len(msg) > 0:
             msg += ' '
             msg = msg[:width - 1]
@@ -123,7 +123,7 @@ def show_debug_in_game(msg: str | None = None) -> None:
     global _last_debug_message
 
     if logging.getLogger().isEnabledFor(logging.DEBUG):
-        height, width = get_window_size()
+        height, width = _stdscr.getmaxyx()
         if msg and len(msg) > 0:
             msg = ' ' + msg + ' '
             # truncate very long messages
