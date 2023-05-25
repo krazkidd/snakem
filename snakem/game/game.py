@@ -21,21 +21,24 @@
 #
 # *************************************************************************
 
+from collections import deque
+from typing import Iterable
+
 from .pellet import Pellet
 from .snake import Snake
 from ..enums import Dir
 
 class Game:
-    def __init__(self, width, height):
-        self.width = width
-        self.height = height
+    def __init__(self, width: int, height: int):
+        self.width: int = width
+        self.height: int = height
 
-        self.snakes = dict()
-        self.pellet = None
+        self.snakes: dict[int, Snake] = dict()
+        self.pellet: Pellet | None = None
 
-        self.tick_num = 0
+        self.tick_num: int = 0
 
-    def tick(self):
+    def tick(self) -> None:
         # move all snakes before checking collisions
         for snake in self.snakes.values():
             snake.move()
@@ -51,13 +54,13 @@ class Game:
             if x_pos in (0, self.width - 1) or y_pos in (0, self.height - 1):
                 snake.is_alive = False
             # check pellet
-            elif snake.body[0] == self.pellet.pos:
+            elif snake.body[0] == self.pellet.pos: # type: ignore
                 snake.grow()
                 self.spawn_new_pellet()
 
         self.tick_num += 1
 
-    def spawn_new_snake(self, snake_id=None):
+    def spawn_new_snake(self, snake_id: int | None = None) -> int | None:
         # NOTE: Only 4 snakes are supported.
 
         if snake_id is None:
@@ -77,7 +80,7 @@ class Game:
 
         return snake_id
 
-    def spawn_new_pellet(self):
+    def spawn_new_pellet(self) -> None:
         self.pellet = Pellet(1, 1, self.width - 1 - 1, self.height - 1 - 1)
 
         # make sure pellet doesn't appear on top of a snake...
@@ -90,7 +93,7 @@ class Game:
             else:
                 is_good_pos = True
 
-    def update_snake(self, tick, snake_id, heading, is_alive, body):
+    def update_snake(self, tick: int, snake_id: int, heading: Dir, is_alive: bool, body: deque[tuple[int, int]]) -> None:
         if snake_id not in self.snakes:
             # just add the snake, I guess?
             self.spawn_new_snake(snake_id)
@@ -100,7 +103,7 @@ class Game:
         snake.is_alive = is_alive
         snake.body = body
 
-    def update_pellet(self, tick, pellet_id, pos_x, pos_y):
+    def update_pellet(self, tick: int, pellet_id: int, pos_x: int, pos_y: int) -> None:
         if not self.pellet:
             self.pellet = Pellet(1, 1, self.width - 1 - 1, self.height - 1 - 1)
 

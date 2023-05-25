@@ -32,23 +32,23 @@ from . import net
 
 class Client:
     def __init__(self):
-        self._motd = None
+        self._motd: str | None = None
 
         # the lobby server address
-        self._lobby_addr = (config.SERVER_HOST, config.SERVER_PORT)
+        self._lobby_addr: tuple[str, int] = (config.SERVER_HOST, config.SERVER_PORT)
 
-        self._client_state  = GameState.LOBBY
+        self._client_state: GameState = GameState.LOBBY
 
-        self._game_instance = None
+        self._game_instance: game.Game
 
-    def start(self):
+    def start(self) -> None:
         logging.info('Contacting %s on port %s.', config.SERVER_HOST, config.SERVER_PORT)
 
         net.init_client_socket()
         #TODO don't pass self._start_with_curses method as a delegate (use an interface)
         display.init_client_window(self._start_with_curses)
 
-    def _start_with_curses(self):
+    def _start_with_curses(self) -> None:
         display.show_message(f'Contacting server at {config.SERVER_HOST}:{config.SERVER_PORT} . . .')
 
         tick_time = 0.0
@@ -68,7 +68,7 @@ class Client:
                 net.send_quit_message(self._lobby_addr)
             net.close_socket()
 
-    def handle_net_message(self, address, msg_type, msg_body):
+    def handle_net_message(self, address: tuple[str, int], msg_type: MsgType, msg_body: bytes) -> None:
         if address == self._lobby_addr:
             if self._client_state == GameState.LOBBY:
                 if msg_type == MsgType.LOBBY_JOIN:
@@ -87,7 +87,7 @@ class Client:
             elif self._client_state == GameState.GAME:
                 self._handle_net_message_during_game(msg_type, msg_body)
 
-    def _handle_net_message_during_game(self, msg_type, msg_body):
+    def _handle_net_message_during_game(self, msg_type: MsgType, msg_body: bytes) -> None:
         if msg_type == MsgType.SNAKE_UPDATE:
             tick, snake_id, heading, is_alive, body = net.unpack_snake_update(msg_body)
 
@@ -99,7 +99,7 @@ class Client:
         elif msg_type == MsgType.LOBBY_JOIN:
             self._start_lobby_mode()
 
-    def handle_input(self):
+    def handle_input(self) -> None:
         input_char = display.get_key()
 
         if self._client_state == GameState.LOBBY:
@@ -124,14 +124,12 @@ class Client:
             elif input_char in config.KEYS_MV_RIGHT:
                 net.send_input_message(self._lobby_addr, Dir.RIGHT)
 
-    def _start_lobby_mode(self):
+    def _start_lobby_mode(self) -> None:
         self._client_state = GameState.LOBBY
-
-        self._game_instance = None
 
         display.show_lobby(self._motd)
 
-    def _start_game_mode(self, width, height):
+    def _start_game_mode(self, width: int, height: int) -> None:
         self._client_state = GameState.GAME
 
         self._game_instance = game.Game(width, height)
