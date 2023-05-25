@@ -22,7 +22,6 @@
 # *************************************************************************
 
 from collections import deque
-from typing import Iterable
 
 from .pellet import Pellet
 from .snake import Snake

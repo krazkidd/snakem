@@ -28,14 +28,14 @@ import logging
 
 from typing import Any
 from collections import deque
-from collections.abc import Iterable
 
 from struct import pack
 from struct import unpack
 from struct import calcsize
 
 from ..enums import MsgType, MsgFmt, Dir
-from ..game import pellet, snake
+from ..game.pellet import Pellet
+from ..game.snake import Snake
 
 MAX_MSG_SIZE: int = 1024
 
@@ -62,9 +62,9 @@ def close_socket() -> None:
 def wait_for_input(handler: Any, do_block: bool = True) -> None:
     if do_block:
         # we block on this call so we're not wasting cycles outside of an active game
-        readable, writable, exceptional = select.select([_sock, sys.stdin], [], [])
+        readable, _, _ = select.select([_sock, sys.stdin], [], [])
     else:
-        readable, writable, exceptional = select.select([_sock, sys.stdin], [], [], TIMEOUT)
+        readable, _, _ = select.select([_sock, sys.stdin], [], [], TIMEOUT)
 
     if sys.stdin in readable:
         handler.handle_input()
@@ -112,7 +112,7 @@ def send_motd(address: tuple[str, int], motd: str) -> None:
 def send_quit_message(address: tuple[str, int]) -> None:
     send_message(address, MsgType.LOBBY_QUIT)
 
-def send_pellet_update(address: tuple[str, int], tick: int, pellet_id: int, pellet: pellet.Pellet) -> None:
+def send_pellet_update(address: tuple[str, int], tick: int, pellet_id: int, pellet: Pellet) -> None:
     send_message(address, MsgType.PELLET_UPDATE, pack(MsgFmt.PELLET_UPDATE, tick, pellet_id, pellet.pos[0], pellet.pos[1]))
 
 def unpack_pellet_update(msg_body: bytes) -> tuple[int, int, int, int]:
@@ -120,7 +120,7 @@ def unpack_pellet_update(msg_body: bytes) -> tuple[int, int, int, int]:
 
     return tick, pellet_id, pos_x, pos_y
 
-def send_snake_update(address: tuple[str, int], tick: int, snake_id: int, snake: snake.Snake) -> None:
+def send_snake_update(address: tuple[str, int], tick: int, snake_id: int, snake: Snake) -> None:
     #TODO don't exceed MAX_MSG_SIZE (without breaking the game--allow splitting an update or increase MAX_MSG_SIZE)
     buf = pack(MsgFmt.SNAKE_UPDATE_HDR, tick, snake_id, snake.heading.value, snake.is_alive, len(snake.body))
     for pos in snake.body:
@@ -128,7 +128,7 @@ def send_snake_update(address: tuple[str, int], tick: int, snake_id: int, snake:
 
     send_message(address, MsgType.SNAKE_UPDATE, buf)
 
-def unpack_snake_update(msg_body: bytes) -> tuple[int, int, Dir, bool, Iterable[tuple[int, int]]]:
+def unpack_snake_update(msg_body: bytes) -> tuple[int, int, Dir, bool, deque[tuple[int, int]]]:
     tick, snake_id, heading, is_alive, length = unpack(MsgFmt.SNAKE_UPDATE_HDR, msg_body[:calcsize(MsgFmt.SNAKE_UPDATE_HDR)]) # type: ignore
     body_buf = msg_body[calcsize(MsgFmt.SNAKE_UPDATE_HDR):]
 

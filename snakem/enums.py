@@ -22,7 +22,6 @@
 # *************************************************************************
 
 from enum import Enum
-from enum import IntEnum
 
 class Dir(Enum):
     """An enum of the cardinal directions."""
