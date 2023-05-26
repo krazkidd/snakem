@@ -61,7 +61,11 @@ class Server:
 
                 if self._socket in readable:
                     address, msg_type, msg_body = net.receive_message(self._socket)
-                    self._handle_net_message(address, msg_type, msg_body)
+
+                    if self.server_state == GameState.GAME:
+                        self._handle_game_message(address, msg_type, msg_body)
+                    else:
+                        self._handle_lobby_message(address, msg_type, msg_body)
 
                 if self.server_state == GameState.GAME:
                     tick_time += net.TIMEOUT
@@ -89,50 +93,47 @@ class Server:
         finally:
             self._socket.close()
 
-    def _handle_net_message(self, address: tuple[str, int], msg_type: MsgType, msg_body: bytes) -> None:
+    def _handle_lobby_message(self, address: tuple[str, int], msg_type: MsgType, msg_body: bytes) -> None:
         if address in self.active_players:
-            if self.server_state == GameState.GAME:
-                self._handle_net_message_during_game(address, msg_type, msg_body)
-            elif self.server_state == GameState.LOBBY:
-                status, snake_id = self.active_players[address]
+            status, snake_id = self.active_players[address]
 
-                if msg_type == MsgType.LOBBY_JOIN:
+            if msg_type == MsgType.LOBBY_JOIN:
+                net.send_lobby_join_request(self._socket, address)  # LOBBY_JOIN is used for join confirmation
+                self.active_players[address] = (MsgType.NOT_READY, snake_id)  # reset READY status
+            elif msg_type == MsgType.LOBBY_QUIT:
+                del self.active_players[address]
+            elif msg_type == MsgType.READY:
+                self.active_players[address] = (MsgType.READY, snake_id)
+
+                for addr, player_tuple in self.active_players.items():
+                    if player_tuple[0] != MsgType.READY:
+                        break
+                else:
+                    self._start_game_mode(config.WIN_WIDTH, config.WIN_HEIGHT)
+            elif msg_type == MsgType.NOT_READY:
+                self.active_players[address] = (MsgType.NOT_READY, snake_id)
+        else:
+            if msg_type == MsgType.LOBBY_JOIN:
+                if len(self.active_players) < 4:
                     net.send_lobby_join_request(self._socket, address)  # LOBBY_JOIN is used for join confirmation
-                    self.active_players[address] = (MsgType.NOT_READY, snake_id)  # reset READY status
-                elif msg_type == MsgType.LOBBY_QUIT:
-                    del self.active_players[address]
-                elif msg_type == MsgType.READY:
-                    self.active_players[address] = (MsgType.READY, snake_id)
+                    self.active_players[address] = (MsgType.NOT_READY, None)
+                else:
+                    net.send_quit_message(self._socket, address)  # LOBBY_QUIT is used for join rejection
 
-                    for addr, player_tuple in self.active_players.items():
-                        if player_tuple[0] != MsgType.READY:
-                            break
-                    else:
-                        self._start_game_mode(config.WIN_WIDTH, config.WIN_HEIGHT)
-                elif msg_type == MsgType.NOT_READY:
-                    self.active_players[address] = (MsgType.NOT_READY, snake_id)
-        else:  # address not in self.active_players
-            if self.server_state == GameState.LOBBY:
-                if msg_type == MsgType.LOBBY_JOIN:
-                    if len(self.active_players) < 4:
-                        net.send_lobby_join_request(self._socket, address)  # LOBBY_JOIN is used for join confirmation
-                        self.active_players[address] = (MsgType.NOT_READY, None)
-                    else:
-                        net.send_quit_message(self._socket, address)  # LOBBY_QUIT is used for join rejection
+    def _handle_game_message(self, address: tuple[str, int], msg_type: MsgType, msg_body: bytes) -> None:
+        if address in self.active_players:
+            do_update_clients = False
 
-    def _handle_net_message_during_game(self, address: tuple[str, int], msg_type: MsgType, msg_body: bytes) -> None:
-        do_update_clients = False
+            if msg_type == MsgType.INPUT:
+                self.game.snakes[self.active_players[address][1]].change_heading(net.unpack_input_message(msg_body)) # type: ignore
+                do_update_clients = True
 
-        if msg_type == MsgType.INPUT:
-            self.game.snakes[self.active_players[address][1]].change_heading(net.unpack_input_message(msg_body)) # type: ignore
-            do_update_clients = True
+            if do_update_clients:
+                for addr in self.active_players:
+                    net.send_pellet_update(self._socket, addr, self.game.tick_num, 0, self.game.pellet)
 
-        if do_update_clients:
-            for addr in self.active_players:
-                net.send_pellet_update(self._socket, addr, self.game.tick_num, 0, self.game.pellet)
-
-                for snake_id, snake in self.game.snakes.items():
-                    net.send_snake_update(self._socket, addr, self.game.tick_num, snake_id, snake)
+                    for snake_id, snake in self.game.snakes.items():
+                        net.send_snake_update(self._socket, addr, self.game.tick_num, snake_id, snake)
 
     def _start_lobby_mode(self) -> None:
         self.server_state = GameState.LOBBY

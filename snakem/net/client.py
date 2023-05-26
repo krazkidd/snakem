@@ -73,7 +73,11 @@ class Client:
                     self._handle_input(display.get_key())
                 elif self._socket in readable:
                     address, msg_type, msg_body = net.receive_message(self._socket)
-                    self._handle_net_message(address, msg_type, msg_body)
+
+                    if self._client_state == GameState.GAME:
+                        self._handle_game_message(address, msg_type, msg_body)
+                    else:
+                        self._handle_lobby_message(address, msg_type, msg_body)
 
                 if self._client_state == GameState.GAME:
                     tick_time += net.TIMEOUT
@@ -86,26 +90,22 @@ class Client:
                 net.send_quit_message(self._socket, self._lobby_addr)
             self._socket.close()
 
-    def _handle_net_message(self, address: tuple[str, int], msg_type: MsgType, msg_body: bytes) -> None:
-        if address == self._lobby_addr:
-            if self._client_state == GameState.LOBBY:
-                if msg_type == MsgType.LOBBY_JOIN:
-                    self._start_lobby_mode()
-                elif msg_type == MsgType.LOBBY_QUIT:
-                    display.show_debug('Lobby rejected your join request.')
-                    self._start_lobby_mode()
-                elif msg_type == MsgType.START:
-                    width, height = net.unpack_start_message(msg_body)
+    def _handle_lobby_message(self, address: tuple[str, int], msg_type: MsgType, msg_body: bytes) -> None:
+        if msg_type == MsgType.LOBBY_JOIN:
+            self._start_lobby_mode()
+        elif msg_type == MsgType.LOBBY_QUIT:
+            display.show_debug('Lobby rejected your join request.')
+            self._start_lobby_mode()
+        elif msg_type == MsgType.START:
+            width, height = net.unpack_start_message(msg_body)
 
-                    self._start_game_mode(width, height)
-                elif msg_type == MsgType.MOTD:
-                    self._motd = bytes.decode(msg_body)
+            self._start_game_mode(width, height)
+        elif msg_type == MsgType.MOTD:
+            self._motd = bytes.decode(msg_body)
 
-                    self._start_lobby_mode()
-            elif self._client_state == GameState.GAME:
-                self._handle_net_message_during_game(address, msg_type, msg_body)
+            self._start_lobby_mode()
 
-    def _handle_net_message_during_game(self, address: tuple[str, int], msg_type: MsgType, msg_body: bytes) -> None:
+    def _handle_game_message(self, address: tuple[str, int], msg_type: MsgType, msg_body: bytes) -> None:
         if msg_type == MsgType.SNAKE_UPDATE:
             tick, snake_id, heading, is_alive, body = net.unpack_snake_update(msg_body)
 
