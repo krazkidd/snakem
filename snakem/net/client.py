@@ -23,6 +23,8 @@
 
 import sys
 import logging
+import socket
+import select
 
 from ..config import client as config
 from ..game import game, display
@@ -37,16 +39,19 @@ class Client:
         # the lobby server address
         self._lobby_addr: tuple[str, int] = (config.SERVER_HOST, config.SERVER_PORT)
 
+        self._socket: socket.socket
+
         self._client_state: GameState = GameState.LOBBY
 
         self._game_instance: game.Game
 
     def start(self) -> None:
+        self._socket = net.init_client_socket()
+
         logging.info('Contacting %s on port %s.', config.SERVER_HOST, config.SERVER_PORT)
 
-        net.init_client_socket()
-        net.send_hello_message(self._lobby_addr)
-        net.send_lobby_join_request(self._lobby_addr)
+        net.send_hello_message(self._socket, self._lobby_addr)
+        net.send_lobby_join_request(self._socket, self._lobby_addr)
 
         #TODO don't pass self._start_with_curses method as a delegate (use an interface)
         display.init_client_window(self._start_with_curses)
@@ -58,7 +63,17 @@ class Client:
 
         try:
             while True:
-                net.wait_for_input(self, self._client_state != GameState.GAME)
+                if self._client_state == GameState.GAME:
+                    readable, _, _ = select.select([self._socket, sys.stdin], [], [], net.TIMEOUT)
+                else:
+                    # we block on this call so we're not wasting cycles outside of an active game
+                    readable, _, _ = select.select([self._socket, sys.stdin], [], [])
+
+                if sys.stdin in readable:
+                    self._handle_input(display.get_key())
+                elif self._socket in readable:
+                    address, msg_type, msg_body = net.receive_message(self._socket)
+                    self._handle_net_message(address, msg_type, msg_body)
 
                 if self._client_state == GameState.GAME:
                     tick_time += net.TIMEOUT
@@ -68,10 +83,10 @@ class Client:
                         display.show_game(self._game_instance)
         finally:
             if self._lobby_addr:
-                net.send_quit_message(self._lobby_addr)
-            net.close_socket()
+                net.send_quit_message(self._socket, self._lobby_addr)
+            self._socket.close()
 
-    def handle_net_message(self, address: tuple[str, int], msg_type: MsgType, msg_body: bytes) -> None:
+    def _handle_net_message(self, address: tuple[str, int], msg_type: MsgType, msg_body: bytes) -> None:
         if address == self._lobby_addr:
             if self._client_state == GameState.LOBBY:
                 if msg_type == MsgType.LOBBY_JOIN:
@@ -88,9 +103,9 @@ class Client:
 
                     self._start_lobby_mode()
             elif self._client_state == GameState.GAME:
-                self._handle_net_message_during_game(msg_type, msg_body)
+                self._handle_net_message_during_game(address, msg_type, msg_body)
 
-    def _handle_net_message_during_game(self, msg_type: MsgType, msg_body: bytes) -> None:
+    def _handle_net_message_during_game(self, address: tuple[str, int], msg_type: MsgType, msg_body: bytes) -> None:
         if msg_type == MsgType.SNAKE_UPDATE:
             tick, snake_id, heading, is_alive, body = net.unpack_snake_update(msg_body)
 
@@ -102,30 +117,28 @@ class Client:
         elif msg_type == MsgType.LOBBY_JOIN:
             self._start_lobby_mode()
 
-    def handle_input(self) -> None:
-        input_char = display.get_key()
-
+    def _handle_input(self, input_char: int) -> None:
         if self._client_state == GameState.LOBBY:
             if input_char in config.KEYS_LOBBY_QUIT:
                 sys.exit()
             elif input_char in config.KEYS_LOBBY_REFRESH:
-                net.send_hello_message(self._lobby_addr)
-                net.send_lobby_join_request(self._lobby_addr)
+                net.send_hello_message(self._socket, self._lobby_addr)
+                net.send_lobby_join_request(self._socket, self._lobby_addr)
             elif input_char in config.KEYS_LOBBY_READY:
-                net.send_ready_message(self._lobby_addr)
+                net.send_ready_message(self._socket, self._lobby_addr)
         elif self._client_state == GameState.GAME:
             if input_char in config.KEYS_GAME_QUIT:
                 #TODO make it harder to quit running game
-                net.send_quit_message(self._lobby_addr)
+                net.send_quit_message(self._socket, self._lobby_addr)
                 self._start_lobby_mode()
             elif input_char in config.KEYS_MV_LEFT:
-                net.send_input_message(self._lobby_addr, Dir.LEFT)
+                net.send_input_message(self._socket, self._lobby_addr, Dir.LEFT)
             elif input_char in config.KEYS_MV_DOWN:
-                net.send_input_message(self._lobby_addr, Dir.DOWN)
+                net.send_input_message(self._socket, self._lobby_addr, Dir.DOWN)
             elif input_char in config.KEYS_MV_UP:
-                net.send_input_message(self._lobby_addr, Dir.UP)
+                net.send_input_message(self._socket, self._lobby_addr, Dir.UP)
             elif input_char in config.KEYS_MV_RIGHT:
-                net.send_input_message(self._lobby_addr, Dir.RIGHT)
+                net.send_input_message(self._socket, self._lobby_addr, Dir.RIGHT)
 
     def _start_lobby_mode(self) -> None:
         self._client_state = GameState.LOBBY
