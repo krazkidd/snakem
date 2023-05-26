@@ -62,7 +62,7 @@ class Client:
         tick_time = 0.0
 
         try:
-            while True:
+            while 1:
                 if self._client_state == GameState.GAME:
                     readable, _, _ = select.select([self._socket, sys.stdin], [], [], net.TIMEOUT)
                 else:

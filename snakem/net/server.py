@@ -52,7 +52,7 @@ class Server:
         tick_time = 0.0
 
         try:
-            while True:
+            while 1:
                 if self.server_state == GameState.GAME:
                     readable, _, _ = select.select([self._socket], [], [], net.TIMEOUT)
                 else:
