@@ -1,5 +1,5 @@
 # the address the main server binds to
-BIND_ADDR: str = '127.0.0.1'
+BIND_ADDR: str = ''
 BIND_PORT: int = 11845
 
 # welcome message for new clients
