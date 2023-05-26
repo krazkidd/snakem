@@ -35,14 +35,13 @@ class Server:
     def __init__(self):
         self._socket: socket.socket
 
-        self.server_state: GameState = GameState.LOBBY
-
         # self.active_players maps net addresses to tuples of (r, s) where:
         #   r = ready status (MsgType.{NOT_,}READY)
         #   s = snake id when a game is running
-        self.active_players: dict[tuple[str, int], tuple[MsgType, int | None]] = dict()
+        self._players: dict[tuple[str, int], tuple[MsgType, int | None]] = dict()
 
-        self.game: game.Game
+        self._game_state: GameState = GameState.LOBBY
+        self._game: game.Game
 
     def start(self) -> None:
         self._socket = net.init_server_socket((config.BIND_ADDR, config.BIND_PORT))
@@ -53,7 +52,7 @@ class Server:
 
         try:
             while 1:
-                if self.server_state == GameState.GAME:
+                if self._game_state == GameState.GAME:
                     readable, _, _ = select.select([self._socket], [], [], net.TIMEOUT)
                 else:
                     # we block on this call so we're not wasting cycles outside of an active game
@@ -62,29 +61,29 @@ class Server:
                 if self._socket in readable:
                     address, msg_type, msg_body = net.receive_message(self._socket)
 
-                    if self.server_state == GameState.GAME:
+                    if self._game_state == GameState.GAME:
                         self._handle_game_message(address, msg_type, msg_body)
                     else:
                         self._handle_lobby_message(address, msg_type, msg_body)
 
-                if self.server_state == GameState.GAME:
+                if self._game_state == GameState.GAME:
                     tick_time += net.TIMEOUT
                     if tick_time >= config.STEP_TIME:
                         tick_time -= config.STEP_TIME
-                        self.game.tick()
+                        self._game.tick()
 
-                        for addr in self.active_players:
-                            for snake_id, snake in self.game.snakes.items():
+                        for addr in self._players:
+                            for snake_id, snake in self._game.snakes.items():
                                 logging.debug('(%s, %s)', snake.body[0][0], snake.body[0][1])
-                                net.send_snake_update(self._socket, addr, self.game.tick_num, snake_id, snake)
+                                net.send_snake_update(self._socket, addr, self._game.tick_num, snake_id, snake)
 
                         # end game when all snakes are dead
                         #TODO the game should end when at most *one* snake is alive
-                        for snake in self.game.snakes.values():
+                        for snake in self._game.snakes.values():
                             if snake.is_alive:
                                 break
                         else:
-                            for addr in self.active_players:
+                            for addr in self._players:
                                 net.send_lobby_join_request(self._socket, addr)
 
                             self._start_lobby_mode()
@@ -94,68 +93,68 @@ class Server:
             self._socket.close()
 
     def _handle_lobby_message(self, address: tuple[str, int], msg_type: MsgType, msg_body: bytes) -> None:
-        if address in self.active_players:
-            status, snake_id = self.active_players[address]
+        if address in self._players:
+            status, snake_id = self._players[address]
 
             if msg_type == MsgType.LOBBY_JOIN:
                 net.send_lobby_join_request(self._socket, address)  # LOBBY_JOIN is used for join confirmation
-                self.active_players[address] = (MsgType.NOT_READY, snake_id)  # reset READY status
+                self._players[address] = (MsgType.NOT_READY, snake_id)  # reset READY status
             elif msg_type == MsgType.LOBBY_QUIT:
-                del self.active_players[address]
+                del self._players[address]
             elif msg_type == MsgType.READY:
-                self.active_players[address] = (MsgType.READY, snake_id)
+                self._players[address] = (MsgType.READY, snake_id)
 
-                for addr, player_tuple in self.active_players.items():
+                for addr, player_tuple in self._players.items():
                     if player_tuple[0] != MsgType.READY:
                         break
                 else:
                     self._start_game_mode(config.WIN_WIDTH, config.WIN_HEIGHT)
             elif msg_type == MsgType.NOT_READY:
-                self.active_players[address] = (MsgType.NOT_READY, snake_id)
+                self._players[address] = (MsgType.NOT_READY, snake_id)
         else:
             if msg_type == MsgType.LOBBY_JOIN:
-                if len(self.active_players) < 4:
+                if len(self._players) < 4:
                     net.send_lobby_join_request(self._socket, address)  # LOBBY_JOIN is used for join confirmation
-                    self.active_players[address] = (MsgType.NOT_READY, None)
+                    self._players[address] = (MsgType.NOT_READY, None)
                 else:
                     net.send_quit_message(self._socket, address)  # LOBBY_QUIT is used for join rejection
 
     def _handle_game_message(self, address: tuple[str, int], msg_type: MsgType, msg_body: bytes) -> None:
-        if address in self.active_players:
+        if address in self._players:
             do_update_clients = False
 
             if msg_type == MsgType.INPUT:
-                self.game.snakes[self.active_players[address][1]].change_heading(net.unpack_input_message(msg_body)) # type: ignore
+                self._game.snakes[self._players[address][1]].change_heading(net.unpack_input_message(msg_body)) # type: ignore
                 do_update_clients = True
 
             if do_update_clients:
-                for addr in self.active_players:
-                    net.send_pellet_update(self._socket, addr, self.game.tick_num, 0, self.game.pellet)
+                for addr in self._players:
+                    net.send_pellet_update(self._socket, addr, self._game.tick_num, 0, self._game.pellet)
 
-                    for snake_id, snake in self.game.snakes.items():
-                        net.send_snake_update(self._socket, addr, self.game.tick_num, snake_id, snake)
+                    for snake_id, snake in self._game.snakes.items():
+                        net.send_snake_update(self._socket, addr, self._game.tick_num, snake_id, snake)
 
     def _start_lobby_mode(self) -> None:
-        self.server_state = GameState.LOBBY
+        self._game_state = GameState.LOBBY
 
     def _start_game_mode(self, width: int, height: int) -> None:
-        self.server_state = GameState.GAME
+        self._game_state = GameState.GAME
 
-        self.game = game.Game(width, height)
+        self._game = game.Game(width, height)
 
-        for addr, player_tuple in self.active_players.items():
-            self.active_players[addr] = (player_tuple[0], self.game.spawn_new_snake())
+        for addr, player_tuple in self._players.items():
+            self._players[addr] = (player_tuple[0], self._game.spawn_new_snake())
 
-        self.game.spawn_new_pellet()
+        self._game.spawn_new_pellet()
 
-        for addr in self.active_players:
-            net.send_pellet_update(self._socket, addr, self.game.tick_num, 0, self.game.pellet)
+        for addr in self._players:
+            net.send_pellet_update(self._socket, addr, self._game.tick_num, 0, self._game.pellet)
 
-            for snake_id, snake in self.game.snakes.items():
-                net.send_snake_update(self._socket, addr, self.game.tick_num, snake_id, snake)
+            for snake_id, snake in self._game.snakes.items():
+                net.send_snake_update(self._socket, addr, self._game.tick_num, snake_id, snake)
 
-        for addr in self.active_players:
-            net.send_start_message(self._socket, addr, self.game.width, self.game.height)
+        for addr in self._players:
+            net.send_start_message(self._socket, addr, self._game.width, self._game.height)
 
 if __name__ == '__main__':
     #TODO add timestamp (with format)
