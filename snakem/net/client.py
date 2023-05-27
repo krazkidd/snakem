@@ -34,7 +34,7 @@ from ..enums import GameState, MsgType, Dir
 from . import net
 
 class Client:
-    def __init__(self):
+    def __init__(self) -> None:
         self._poll = select.poll()
 
         self._socket: socket.socket

@@ -28,7 +28,7 @@ from .snake import Snake
 from ..enums import Dir
 
 class Game:
-    def __init__(self, width: int, height: int):
+    def __init__(self, width: int, height: int) -> None:
         self.width: int = width
         self.height: int = height
 

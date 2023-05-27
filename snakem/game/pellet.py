@@ -29,7 +29,7 @@ class Pellet:
 
     Holds a randomized position."""
 
-    def __init__(self, min_x: int, min_y: int, max_x: int, max_y: int):
+    def __init__(self, min_x: int, min_y: int, max_x: int, max_y: int) -> None:
 
         """On creation, randomly set a position using the
         given arguments as maximum values."""

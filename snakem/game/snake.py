@@ -34,7 +34,7 @@ class Snake:
 
     """
 
-    def __init__(self, head_pos: tuple[int, int], heading: Dir, length: int = 4):
+    def __init__(self, head_pos: tuple[int, int], heading: Dir, length: int = 4) -> None:
         self.body: deque[tuple[int, int]] = deque()
 
         x_pos, y_pos = head_pos

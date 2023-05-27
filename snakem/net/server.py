@@ -33,7 +33,7 @@ from ..enums import GameState, MsgType
 from . import net
 
 class Server:
-    def __init__(self):
+    def __init__(self) -> None:
         self._health_check_socket: socket.socket
         self._socket: socket.socket
 
