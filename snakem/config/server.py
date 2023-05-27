@@ -1,4 +1,4 @@
-# the address the main server binds to
+# address = '' will bind to all interfaces
 BIND_ADDR: str = ''
 # port = 0 will use random port
 BIND_PORT_HEALTH_CHECK: int = 11844
