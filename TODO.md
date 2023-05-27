@@ -33,3 +33,7 @@
 - figure out packaging and put this in Dockerfile
   https://docs.python.org/3/distutils/setupscript.html
   https://packaging.python.org/en/latest/
+
+- do we need to watch for desync between the game tick counter and the time elapsed?
+  - we changed from static step counter to real timekeeper
+  - need to add a prioritization system that drops old net messages or advances game ticks to catch up (e.g. if a game update has been seen, we only want to apply updates from that point)

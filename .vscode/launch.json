@@ -1,18 +1,33 @@
 {
   "configurations": [
     {
-      "name": "snakem server",
+      "name": "snakem server (local)",
       "type": "python",
       "request": "launch",
       "module": "snakem.net.server",
       "justMyCode": true
     },
     {
-      "name": "snakem client",
+      "name": "snakem client (local)",
       "type": "python",
       "request": "launch",
       "module": "snakem.net.client",
       "justMyCode": true
+    },
+    {
+      "name": "snakem server (docker)",
+      "type": "docker",
+      "request": "launch",
+      "preLaunchTask": "docker-run: debug",
+      "python": {
+        "pathMappings": [
+          {
+            "localRoot": "${workspaceFolder}",
+            "remoteRoot": "/app"
+          }
+        ],
+        "projectType": "general"
+      }
     }
   ]
 }
