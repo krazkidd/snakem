@@ -35,6 +35,8 @@ from . import net
 
 class Client:
     def __init__(self):
+        self._poll = select.poll()
+
         self._socket: socket.socket
 
         # the lobby server address
@@ -46,6 +48,9 @@ class Client:
 
     def start(self) -> None:
         self._socket = net.init_client_socket()
+
+        self._poll.register(self._socket, select.POLLIN)
+        self._poll.register(sys.stdin, select.POLLIN)
 
         logging.info('Contacting %s on port %s.', config.SERVER_HOST, config.SERVER_PORT)
 
@@ -63,20 +68,21 @@ class Client:
         try:
             while 1:
                 if self._game_state == GameState.GAME:
-                    readable, _, _ = select.select([self._socket, sys.stdin], [], [], net.TIMEOUT)
+                    inputs = self._poll.poll(net.TIMEOUT)
                 else:
                     # we block on this call so we're not wasting cycles outside of an active game
-                    readable, _, _ = select.select([self._socket, sys.stdin], [], [])
+                    inputs = self._poll.poll()
 
-                if sys.stdin in readable:
-                    self._handle_input(display.get_key())
-                elif self._socket in readable:
-                    address, msg_type, msg_body = net.receive_message(self._socket)
+                for fd, event in inputs:
+                    if fd == sys.stdin.fileno():
+                        self._handle_input(display.get_key())
+                    elif fd == self._socket.fileno():
+                        address, msg_type, msg_body = net.receive_message(self._socket)
 
-                    if self._game_state == GameState.GAME:
-                        self._handle_game_message(address, msg_type, msg_body)
-                    else:
-                        self._handle_lobby_message(address, msg_type, msg_body)
+                        if self._game_state == GameState.GAME:
+                            self._handle_game_message(address, msg_type, msg_body)
+                        else:
+                            self._handle_lobby_message(address, msg_type, msg_body)
 
                 if self._game_state == GameState.GAME:
                     now = time.monotonic_ns()

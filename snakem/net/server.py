@@ -21,9 +21,9 @@
 #
 # *************************************************************************
 
-import select
-import socket
 import logging
+import socket
+import select
 import time
 
 from ..config import server as config
@@ -34,7 +34,10 @@ from . import net
 
 class Server:
     def __init__(self):
+        self._health_check_socket: socket.socket
         self._socket: socket.socket
+
+        self._poll = select.poll()
 
         # self.active_players maps net addresses to tuples of (r, s) where:
         #   r = ready status (MsgType.{NOT_,}READY)
@@ -45,27 +48,37 @@ class Server:
         self._game: game.Game
 
     def start(self) -> None:
+        self._health_check_socket = net.init_health_check_socket((config.BIND_ADDR, config.BIND_PORT_HEALTH_CHECK))
         self._socket = net.init_server_socket((config.BIND_ADDR, config.BIND_PORT))
 
-        logging.info('Listening on port %s.', config.BIND_PORT)
+        self._poll.register(self._health_check_socket, select.POLLIN)
+        self._poll.register(self._socket, select.POLLIN)
+
+        logging.info('Health check listening on port %s.', config.BIND_PORT_HEALTH_CHECK)
+        logging.info('Server listening on port %s.', config.BIND_PORT)
 
         last_step_time = time.monotonic_ns()
 
         try:
             while 1:
                 if self._game_state == GameState.GAME:
-                    readable, _, _ = select.select([self._socket], [], [], net.TIMEOUT)
+                    inputs = self._poll.poll(net.TIMEOUT)
                 else:
                     # we block on this call so we're not wasting cycles outside of an active game
-                    readable, _, _ = select.select([self._socket], [], [])
+                    inputs = self._poll.poll()
 
-                if self._socket in readable:
-                    address, msg_type, msg_body = net.receive_message(self._socket)
+                for fd, event in inputs:
+                    if fd == self._health_check_socket.fileno():
+                        conn, addr = self._health_check_socket.accept()
+                        conn.shutdown(socket.SHUT_RDWR)
+                        conn.close()
+                    elif fd == self._socket.fileno():
+                        address, msg_type, msg_body = net.receive_message(self._socket)
 
-                    if self._game_state == GameState.GAME:
-                        self._handle_game_message(address, msg_type, msg_body)
-                    else:
-                        self._handle_lobby_message(address, msg_type, msg_body)
+                        if self._game_state == GameState.GAME:
+                            self._handle_game_message(address, msg_type, msg_body)
+                        else:
+                            self._handle_lobby_message(address, msg_type, msg_body)
 
                 if self._game_state == GameState.GAME:
                     now = time.monotonic_ns()
@@ -93,6 +106,7 @@ class Server:
         except Exception:
             logging.exception('Unknown exception.')
         finally:
+            self._health_check_socket.close()
             self._socket.close()
 
     def _handle_lobby_message(self, address: tuple[str, int], msg_type: MsgType, msg_body: bytes) -> None:

@@ -41,6 +41,14 @@ TIMEOUT: float = 0.005
 
 EMPTY_BYTES: bytes = b''
 
+def init_health_check_socket(addr: tuple[str, int]) -> socket.socket:
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.bind(addr)
+
+    sock.listen(1024)
+
+    return sock
+
 def init_server_socket(addr: tuple[str, int]) -> socket.socket:
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(addr)
