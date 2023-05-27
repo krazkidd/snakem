@@ -12,5 +12,5 @@ MOTD: str = 'Welcome to my Snake-M development server!'
 WIN_WIDTH: int = 60
 WIN_HEIGHT: int = 35
 
-# how often to advance the game state
-STEP_TIME: float = 0.1
+# how fast to advance the game state
+STEP_TIME_MS: int = 100

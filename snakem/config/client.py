@@ -5,8 +5,8 @@ import curses.ascii
 SERVER_HOST: str = '127.0.0.1'
 SERVER_PORT: int = 11845
 
-# how often to advance the game state
-STEP_TIME: float = 0.1
+# how fast to advance the game state
+STEP_TIME_MS: int = 100
 
 ############ KEY BINDINGS ############
 

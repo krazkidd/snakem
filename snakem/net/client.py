@@ -25,6 +25,7 @@ import sys
 import logging
 import socket
 import select
+import time
 
 from ..config import client as config
 from ..game import game, display
@@ -57,7 +58,7 @@ class Client:
     def _start_with_curses(self) -> None:
         display.show_message(f'Contacting server at {config.SERVER_HOST}:{config.SERVER_PORT} . . .')
 
-        tick_time = 0.0
+        last_step_time = time.monotonic_ns()
 
         try:
             while 1:
@@ -78,10 +79,12 @@ class Client:
                         self._handle_lobby_message(address, msg_type, msg_body)
 
                 if self._game_state == GameState.GAME:
-                    tick_time += net.TIMEOUT
-                    #TODO get STEP_TIME from server during game setup
-                    if tick_time >= config.STEP_TIME:
-                        tick_time -= config.STEP_TIME
+                    now = time.monotonic_ns()
+
+                    #TODO get STEP_TIME_MS from server during game setup
+                    if (now - last_step_time) // 1_000_000 >= config.STEP_TIME_MS:
+                        last_step_time = now
+
                         display.show_game(self._game)
         finally:
             if self._server_addr:

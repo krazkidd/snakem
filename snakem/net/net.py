@@ -36,7 +36,7 @@ from ..game.snake import Snake
 
 MAX_MSG_SIZE: int = 1024
 
-# how long to wait for an input event
+# how long to wait for a network message or other input event
 TIMEOUT: float = 0.005
 
 EMPTY_BYTES: bytes = b''

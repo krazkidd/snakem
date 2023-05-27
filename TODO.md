@@ -33,3 +33,6 @@
 - figure out packaging and put this in Dockerfile
   https://docs.python.org/3/distutils/setupscript.html
   https://packaging.python.org/en/latest/
+
+- do we need to watch for desync between the game tick counter and the time elapsed?
+  - we changed from static step counter to real timekeeper

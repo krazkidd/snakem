@@ -24,6 +24,7 @@
 import select
 import socket
 import logging
+import time
 
 from ..config import server as config
 from ..game import game
@@ -48,7 +49,7 @@ class Server:
 
         logging.info('Listening on port %s.', config.BIND_PORT)
 
-        tick_time = 0.0
+        last_step_time = time.monotonic_ns()
 
         try:
             while 1:
@@ -67,9 +68,11 @@ class Server:
                         self._handle_lobby_message(address, msg_type, msg_body)
 
                 if self._game_state == GameState.GAME:
-                    tick_time += net.TIMEOUT
-                    if tick_time >= config.STEP_TIME:
-                        tick_time -= config.STEP_TIME
+                    now = time.monotonic_ns()
+
+                    if (now - last_step_time) // 1_000_000 >= config.STEP_TIME_MS:
+                        last_step_time = now
+
                         self._game.tick()
 
                         for addr in self._players:
