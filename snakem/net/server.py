@@ -175,6 +175,7 @@ class Server:
 
 if __name__ == '__main__':
     #TODO add timestamp (with format)
-    #logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
+    #logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
+    logging.basicConfig(level=logging.INFO)
 
     Server().start()
