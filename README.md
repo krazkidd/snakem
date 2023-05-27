@@ -36,3 +36,7 @@ License: GPLv3 (see LICENSE.md file)
 1. Install VS Code and the recommended extensions (see `.vscode/extensions.json`).
 2. In the Run and Debug view, launch **snakem server** or **snakem client**.
 3. Start the server or client as described in #starting-the-game.
+
+### Deploy your own server:
+
+[![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/krazkidd/snakem/tree/master&refcode=b9ac212b7d29)
