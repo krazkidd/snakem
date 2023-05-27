@@ -20,13 +20,16 @@ License: GPLv3 (see LICENSE.md file)
 
 - POSIX OS (terminal with curses support is required)
 - Python 3.11 or later
+- Docker CLI
 
 ### Starting the game:
 
 1. Open a terminal and navigate to the source root folder.
-2. Run `$ python3 -m snakem.net.server` to start the server.
-3. In another terminal, navigate to the source root folder.
-4. Run `$ python3 -m snakem.net.client` to start the client.
+2. Run `$ sudo docker build -t snakem-dev:latest .` to build the Docker image.
+3. Run `sudo docker run -d -p 11845:11845/udp --name snakem-dev snakem-dev:latest` to create the Docker container and start the server.
+4. Run `sudo docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' snakem-dev` to get the IP address of the container.
+5. Update SERVER_HOST in `snakem/config/client.py` with the container IP address.
+6. Run `$ python3 -m snakem.net.client` to start the client.
 
 ### Debugging the game:
 
