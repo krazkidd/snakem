@@ -4,7 +4,7 @@ alerts:
 ingress:
   rules:
     - component:
-        name: snakem
+        name: snakem-server
       match:
         path:
           prefix: /
