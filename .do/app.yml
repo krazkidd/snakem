@@ -22,7 +22,7 @@ services:
       port: 11844
       initial_delay_seconds: 10
     http_port: 11845
-    internal_ports: [11844, 11845]
+    internal_ports: [11844]
     instance_count: 1
     instance_size_slug: basic-xxs
     name: snakem-server
