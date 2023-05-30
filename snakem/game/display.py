@@ -22,64 +22,37 @@
 # *************************************************************************
 
 import curses
-import os
 import logging
-
-from collections.abc import Callable
 
 from .game import Game
 
-_stdscr: curses.window
-
-_app_callback: Callable[..., None]
-
 _last_debug_message: str = ''
 
-def init_client_window(app_callback: Callable[..., None]) -> None:
-    global _app_callback
-    _app_callback = app_callback
+def show_message(scr: curses.window, msg: str) -> None:
+    erase(scr)
+    height, width = get_window_size(scr)
+    scr.addstr(height // 2, max(0, width // 2 - len(msg) // 2), msg)
+    scr.refresh()
 
-    # set shorter delay for ESC key recognition
-    if 'ESCDELAY' not in os.environ:
-        os.environ.setdefault('ESCDELAY', '75')
-
-    # cbreak on, echo off, keypad on, colors on
-    curses.wrapper(_wrapper_callback)
-
-def _wrapper_callback(scr: curses.window) -> None:
-    global _stdscr
-    _stdscr = scr
-
-    if curses.curs_set(0) == curses.ERR:
-        show_debug('Can\'t hide cursor')
-
-    _app_callback()
-
-def show_message(msg: str) -> None:
-    erase()
-    height, width = get_window_size()
-    _stdscr.addstr(height // 2, max(0, width // 2 - len(msg) // 2), msg)
-    _stdscr.refresh()
-
-def show_lobby(motd: str | None = None) -> None:
+def show_lobby(scr: curses.window, motd: str | None = None) -> None:
     if motd:
-        show_message(motd)
+        show_message(scr, motd)
     else:
-        show_message('Waiting for game to start . . .')
+        show_message(scr, 'Waiting for game to start . . .')
 
-def show_game(game: Game) -> None:
-    height, width = get_window_size()
+def show_game(scr: curses.window, game: Game) -> None:
+    height, width = get_window_size(scr)
 
-    _stdscr.erase()
+    scr.erase()
 
-    _stdscr.hline(0, 0, curses.ACS_HLINE, min(width, game.width) - 1)
-    _stdscr.vline(0, 0, curses.ACS_VLINE, min(height, game.height) - 1)
+    scr.hline(0, 0, curses.ACS_HLINE, min(width, game.width) - 1)
+    scr.vline(0, 0, curses.ACS_VLINE, min(height, game.height) - 1)
 
     if game.height <= height:
-        _stdscr.hline(game.height, 0, curses.ACS_HLINE, min(width, game.width) - 1)
+        scr.hline(game.height, 0, curses.ACS_HLINE, min(width, game.width) - 1)
 
     if game.width <= width:
-        _stdscr.vline(0, game.width - 1, curses.ACS_VLINE, min(height, game.height) - 1)
+        scr.vline(0, game.width - 1, curses.ACS_VLINE, min(height, game.height) - 1)
 
     debug_str = ''
     for snake in game.snakes.values():
@@ -89,27 +62,27 @@ def show_game(game: Game) -> None:
         for x_pos, y_pos in snake.body:
             if 0 <= x_pos <= width - 1 and 0 <= y_pos <= height - 1:
                 if (x_pos, y_pos) == snake.body[0]:
-                    _stdscr.addch(y_pos, x_pos, ord('X'))
+                    scr.addch(y_pos, x_pos, ord('X'))
                 else:
-                    _stdscr.addch(y_pos, x_pos, ord('O'))
+                    scr.addch(y_pos, x_pos, ord('O'))
 
         debug_str += 'snake: ' + str(len(snake.body))
 
     if game.pellet is not None:
         if 0 <= game.pellet.pos[0] <= width - 1 and 0 <= game.pellet.pos[1] <= height - 1:
-            _stdscr.addch(game.pellet.pos[1], game.pellet.pos[0], ord('+'))
+            scr.addch(game.pellet.pos[1], game.pellet.pos[0], ord('+'))
 
     #TODO name the snakes and show score at the top?
     #show_debug_in_game(debugStr)
-    show_debug_in_game()
+    show_debug_in_game(scr)
 
-    _stdscr.refresh()
+    scr.refresh()
 
-def show_debug(msg: str | None = None) -> None:
+def show_debug(scr: curses.window, msg: str | None = None) -> None:
     global _last_debug_message
 
     if logging.getLogger().isEnabledFor(logging.DEBUG):
-        height, width = _stdscr.getmaxyx()
+        height, width = scr.getmaxyx()
         if msg and len(msg) > 0:
             logging.debug(msg)
 
@@ -118,14 +91,14 @@ def show_debug(msg: str | None = None) -> None:
             _last_debug_message = msg
         else:
             msg = _last_debug_message
-        _stdscr.addstr(height - 1, 0, msg)
-        _stdscr.hline(height - 1, len(msg), ord('-'), width - len(msg))
+        scr.addstr(height - 1, 0, msg)
+        scr.hline(height - 1, len(msg), ord('-'), width - len(msg))
 
-def show_debug_in_game(msg: str | None = None) -> None:
+def show_debug_in_game(scr: curses.window, msg: str | None = None) -> None:
     global _last_debug_message
 
     if logging.getLogger().isEnabledFor(logging.DEBUG):
-        height, width = _stdscr.getmaxyx()
+        height, width = scr.getmaxyx()
         if msg and len(msg) > 0:
             logging.debug(msg)
 
@@ -135,18 +108,18 @@ def show_debug_in_game(msg: str | None = None) -> None:
             _last_debug_message = msg
         else:
             msg = _last_debug_message
-        _stdscr.addstr(height - 1, 2, msg)
+        scr.addstr(height - 1, 2, msg)
 
-def get_window_size() -> tuple[int, int]:
-    height, width = _stdscr.getmaxyx()
+def get_window_size(scr: curses.window) -> tuple[int, int]:
+    height, width = scr.getmaxyx()
     if logging.getLogger().isEnabledFor(logging.DEBUG):
         height -= 1
     return height, width
 
-def get_key() -> int:
-    return _stdscr.getch()
+def get_key(scr: curses.window) -> int:
+    return scr.getch()
 
-def erase() -> None:
-    _stdscr.erase()
-    show_debug()
-    _stdscr.refresh()
+def erase(scr: curses.window) -> None:
+    scr.erase()
+    show_debug(scr)
+    scr.refresh()

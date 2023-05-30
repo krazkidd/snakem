@@ -1,9 +1,3 @@
-# address = '' will bind to all interfaces
-BIND_ADDR: str = ''
-# port = 0 will use random port
-BIND_PORT_HEALTH_CHECK: int = 11844
-BIND_PORT: int = 11845
-
 # welcome message for new clients
 MOTD: str = 'Welcome to my Snake-M development server!'
 

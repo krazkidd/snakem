@@ -23,7 +23,7 @@
 
 from collections import deque
 
-from ..enums import Dir
+from .enums import Dir
 
 class Snake:
 
