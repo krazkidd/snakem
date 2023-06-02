@@ -23,56 +23,11 @@
 
 from enum import Enum
 
-class Dir(Enum):
-    """An enum of the cardinal directions."""
-
-    #TODO use auto()?
-
-    UP = 0
-    DOWN = 1
-    LEFT = 2
-    RIGHT = 3
-
 class GameState(Enum):
     #TODO use auto()?
 
     LOBBY = 0
     GAME = 1
-
-class MsgFmt:
-    # net message header
-    # B: message type
-    # H: length of message (including header)
-    HDR = '!BH'
-
-    # start message
-    # i: window width
-    # i: window height
-    START = '!ii'
-
-    # snake update message (header)
-    # I: tick num (game time elapsed)
-    # i: snake ID
-    # B: heading
-    # ?: is alive
-    # I: body length
-    SNAKE_UPDATE_HDR = '!IiB?I'
-
-    # snake update message (snake body)
-    # i: x position
-    # i: y position
-    SNAKE_UPDATE_BDY = '!ii'
-
-    # pellet update message
-    # I: tick num (game time elapsed)
-    # i: pellet ID
-    # i: x position
-    # i: y position
-    PELLET_UPDATE = '!Iiii'
-
-    # client/player input
-    # B: new heading
-    PLAYER_INPUT = '!B'
 
 class MsgType(Enum):
     """Enum for Snake network messages"""

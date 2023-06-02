@@ -21,126 +21,102 @@
 #
 # *************************************************************************
 
-import socket
+import json
 import logging
 
-from collections import deque
+from starlette.websockets import WebSocket # aka fastapi.WebSocket
+from websockets.client import WebSocketClientProtocol
 
-from struct import pack
-from struct import unpack
-from struct import calcsize
-
-from ..enums import MsgType, MsgFmt, Dir
+from ..game.enums import Dir
 from ..game.pellet import Pellet
 from ..game.snake import Snake
 
-MAX_MSG_SIZE: int = 1024
+from .enums import MsgType
 
 # how long to wait for a network message or other input event
 TIMEOUT: float = 0.005
 
-EMPTY_BYTES: bytes = b''
-
-def init_health_check_socket(addr: tuple[str, int]) -> socket.socket:
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.bind(addr)
-
-    sock.listen(1024)
-
-    return sock
-
-def init_server_socket(addr: tuple[str, int]) -> socket.socket:
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.bind(addr)
-
-    return sock
-
-def init_client_socket() -> socket.socket:
-    return socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-def _send_message(sock: socket.socket, address: tuple[str, int], msg_type: MsgType, msg_body: bytes | None = None) -> None:
-    if msg_body:
-        msg_len = len(msg_body)
-
-        buf = pack(MsgFmt.HDR, msg_type.value, calcsize(MsgFmt.HDR) + msg_len)
-        buf += msg_body
+async def send_message(ws: WebSocketClientProtocol | WebSocket, msg_type: MsgType, json_dict: dict | None = None) -> None:
+    if json_dict is None:
+        json_dict = { '_msg_type': msg_type.value }
     else:
-        msg_len = 0
+        json_dict['_msg_type'] = msg_type.value
 
-        buf = pack(MsgFmt.HDR, msg_type.value, calcsize(MsgFmt.HDR))
+    logging.debug('NETMSG (to %s): <%s>', 'TODO', msg_type.name)
 
-    logging.debug('NETMSG (to %s): <%s, length %s>', address[0], msg_type.name, msg_len)
-
-    sock.sendto(buf, address)
-
-def receive_message(sock: socket.socket) -> tuple[tuple[str, int], MsgType, bytes]:
-    msg, address = sock.recvfrom(MAX_MSG_SIZE)
-    msg_type_, msg_len = unpack(MsgFmt.HDR, msg[:calcsize(MsgFmt.HDR)])
-
-    msg_type = MsgType(msg_type_)
-
-    #TODO verify msg size!
-    if len(msg) > calcsize(MsgFmt.HDR):
-        msg_body = msg[calcsize(MsgFmt.HDR):]
+    if isinstance(ws, WebSocketClientProtocol):
+        await ws.send(json.dumps(json_dict))
     else:
-        msg_body = EMPTY_BYTES
+        await ws.send_json(json_dict)
 
-    logging.debug('NETMSG (from %s): <%s, length %s>', address[0], msg_type.name, msg_len)
+async def receive_message(ws: WebSocketClientProtocol | WebSocket) -> tuple[MsgType, dict]:
+    json_dict: dict
 
-    return address, msg_type, msg_body
+    if isinstance(ws, WebSocketClientProtocol):
+        json_dict = json.loads(await ws.recv())
+    else:
+        json_dict = await ws.receive_json()
 
-def send_hello_message(sock: socket.socket, address: tuple[str, int]) -> None:
-    _send_message(sock, address, MsgType.MOTD)
+    msg_type = MsgType(json_dict['_msg_type'])
 
-def send_motd(sock: socket.socket, address: tuple[str, int], motd: str) -> None:
-    _send_message(sock, address, MsgType.MOTD, str.encode(motd))
+    #TODO print address as first argument
+    logging.debug('NETMSG (from %s): <%s>', 'TODO', msg_type.name)
 
-def send_quit_message(sock: socket.socket, address: tuple[str, int]) -> None:
-    _send_message(sock, address, MsgType.LOBBY_QUIT)
+    return msg_type, json_dict
 
-def send_pellet_update(sock: socket.socket, address: tuple[str, int], tick: int, pellet_id: int, pellet: Pellet) -> None:
-    _send_message(sock, address, MsgType.PELLET_UPDATE, pack(MsgFmt.PELLET_UPDATE, tick, pellet_id, pellet.pos[0], pellet.pos[1]))
+async def send_motd(ws: WebSocketClientProtocol | WebSocket, motd: str) -> None:
+    await send_message(ws, MsgType.MOTD, {
+        'motd': motd
+    })
 
-def unpack_pellet_update(msg_body: bytes) -> tuple[int, int, int, int]:
-    tick, pellet_id, pos_x, pos_y = unpack(MsgFmt.PELLET_UPDATE, msg_body[:calcsize(MsgFmt.PELLET_UPDATE)])
+async def send_quit_message(ws: WebSocketClientProtocol | WebSocket) -> None:
+    await send_message(ws, MsgType.LOBBY_QUIT)
 
-    return tick, pellet_id, pos_x, pos_y
+async def send_pellet_update(ws: WebSocketClientProtocol | WebSocket, tick: int, pellet_id: int, pellet: Pellet) -> None:
+    await send_message(ws, MsgType.PELLET_UPDATE, {
+        'tick': tick,
+        'pellet_id': pellet_id,
+        'pos_x': pellet.pos[0],
+        'pos_y': pellet.pos[1]
+    })
 
-def send_snake_update(sock: socket.socket, address: tuple[str, int], tick: int, snake_id: int, snake: Snake) -> None:
-    #TODO don't exceed MAX_MSG_SIZE (without breaking the game--allow splitting an update or increase MAX_MSG_SIZE)
-    buf = pack(MsgFmt.SNAKE_UPDATE_HDR, tick, snake_id, snake.heading.value, snake.is_alive, len(snake.body))
-    for pos in snake.body:
-        buf += pack(MsgFmt.SNAKE_UPDATE_BDY, pos[0], pos[1])
+def unpack_pellet_update(json_dict: dict) -> tuple[int, int, int, int]:
+    return json_dict['tick'], json_dict['pellet_id'], json_dict['pos_x'], json_dict['pos_y']
 
-    _send_message(sock, address, MsgType.SNAKE_UPDATE, buf)
+async def send_snake_update(ws: WebSocketClientProtocol | WebSocket, tick: int, snake_id: int, snake: Snake) -> None:
+    await send_message(ws, MsgType.SNAKE_UPDATE, {
+        'tick': tick,
+        'snake_id': snake_id,
+        'heading': snake.heading.value,
+        'is_alive': snake.is_alive,
+        #TODO might have to use arrays (rather than tuples) for body piece positions
+        'body': snake.body
+    })
 
-def unpack_snake_update(msg_body: bytes) -> tuple[int, int, Dir, bool, deque[tuple[int, int]]]:
-    tick, snake_id, heading, is_alive, length = unpack(MsgFmt.SNAKE_UPDATE_HDR, msg_body[:calcsize(MsgFmt.SNAKE_UPDATE_HDR)]) # type: ignore
-    body_buf = msg_body[calcsize(MsgFmt.SNAKE_UPDATE_HDR):]
+def unpack_snake_update(json_dict: dict) -> tuple[int, int, Dir, bool, list[tuple[int, int]]]:
+    return json_dict['tick'], json_dict['snake_id'], Dir(json_dict['heading']), json_dict['is_alive'] == 'true', json_dict['body']
 
-    body: deque[tuple[int, int]] = deque()
-    size = calcsize(MsgFmt.SNAKE_UPDATE_BDY)
-    for i in range(length):
-        body.append(unpack(MsgFmt.SNAKE_UPDATE_BDY, body_buf[i * size:(i + 1) * size])) # type: ignore
+async def send_lobby_join_request(ws: WebSocketClientProtocol | WebSocket) -> None:
+    await send_message(ws, MsgType.LOBBY_JOIN)
 
-    return tick, snake_id, Dir(heading), is_alive, body
+async def send_ready_message(ws: WebSocketClientProtocol | WebSocket) -> None:
+    await send_message(ws, MsgType.READY)
 
-def send_lobby_join_request(sock: socket.socket, address: tuple[str, int]) -> None:
-    _send_message(sock, address, MsgType.LOBBY_JOIN)
+async def send_start_message(ws: WebSocketClientProtocol | WebSocket, width: int, height: int, step_time_ms: int) -> None:
+    await send_message(ws, MsgType.START, {
+        'width': width,
+        'height': height,
+        'step_time_ms': step_time_ms
+    })
 
-def send_ready_message(sock: socket.socket, address: tuple[str, int]) -> None:
-    _send_message(sock, address, MsgType.READY)
+def unpack_start_message(json_dict: dict) -> tuple[int, int, int]:
+    return json_dict['width'], json_dict['height'], json_dict['step_time_ms']
 
-def send_start_message(sock: socket.socket, address: tuple[str, int], width: int, height: int) -> None:
-    _send_message(sock, address, MsgType.START, pack(MsgFmt.START, width, height))
+async def send_input_message(ws: WebSocketClientProtocol | WebSocket, tick: int, heading: Dir) -> None:
+    await send_message(ws, MsgType.INPUT, {
+        'tick': tick,
+        'heading': heading.value
+    })
 
-def unpack_start_message(msg_body: bytes) -> tuple[int, int]:
-    width, height = unpack(MsgFmt.START, msg_body[:calcsize(MsgFmt.START)]) # type: ignore
-
-    return width, height
-
-def send_input_message(sock: socket.socket, address: tuple[str, int], heading: Dir) -> None:
-    _send_message(sock, address, MsgType.INPUT, pack(MsgFmt.PLAYER_INPUT, heading.value))
-
-def unpack_input_message(msg_body: bytes) -> Dir:
-    return Dir(unpack(MsgFmt.PLAYER_INPUT, msg_body)[0])
+def unpack_input_message(json_dict: dict) -> tuple[int, Dir]:
+    return json_dict['tick'], Dir(json_dict['heading'])

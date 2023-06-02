@@ -21,9 +21,7 @@
 #
 # *************************************************************************
 
-from collections import deque
-
-from ..enums import Dir
+from .enums import Dir
 
 class Snake:
 
@@ -35,7 +33,7 @@ class Snake:
     """
 
     def __init__(self, head_pos: tuple[int, int], heading: Dir, length: int = 4) -> None:
-        self.body: deque[tuple[int, int]] = deque()
+        self.body: list[tuple[int, int]] = list()
 
         x_pos, y_pos = head_pos
         for i in range(length):
@@ -76,24 +74,28 @@ class Snake:
         """
 
         if self.is_alive:
+            if self.__should_grow:
+                self.body.append((-1, -1))
+
             x_pos, y_pos = self.body[0]
 
             # check the heading of the snake and move the
             # head's position accordingly
             if self.heading == Dir.RIGHT:
-                self.body.appendleft((x_pos + 1, y_pos))
+                x_pos = x_pos + 1
             elif self.heading == Dir.LEFT:
-                self.body.appendleft((x_pos - 1, y_pos))
+                x_pos = x_pos - 1
             elif self.heading == Dir.UP:
-                self.body.appendleft((x_pos, y_pos - 1))
+                y_pos = y_pos - 1
             elif self.heading == Dir.DOWN:
-                self.body.appendleft((x_pos, y_pos + 1))
+                y_pos = y_pos + 1
 
-            # pop the last body segment unless the snake is supposed to grow
-            if self.__should_grow:
-                self.__should_grow = False
-            else:
-                self.body.pop()
+            for i, pos_i in enumerate(self.body):
+                x_i, y_i = pos_i
+
+                self.body[i] = (x_pos, y_pos)
+
+                x_pos, y_pos = x_i, y_i
 
             if self.__next_heading:
                 self.heading = self.__next_heading

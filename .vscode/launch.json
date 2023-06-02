@@ -4,8 +4,18 @@
       "name": "snakem server (local)",
       "type": "python",
       "request": "launch",
-      "module": "snakem.net.server",
-      "justMyCode": true
+      "module": "uvicorn",
+      "args": [
+        "snakem.web.app:app",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "9000",
+        "--log-level",
+        "debug"
+      ],
+      "jinja": false,
+      "justMyCode": false
     },
     {
       "name": "snakem client (local)",

@@ -21,11 +21,9 @@
 #
 # *************************************************************************
 
-from collections import deque
-
 from .pellet import Pellet
 from .snake import Snake
-from ..enums import Dir
+from .enums import Dir
 
 class Game:
     def __init__(self, width: int, height: int) -> None:
@@ -33,9 +31,11 @@ class Game:
         self.height: int = height
 
         self.snakes: dict[int, Snake] = dict()
-        self.pellet: Pellet | None = None
+        self.pellet: Pellet
 
         self.tick_num: int = 0
+
+        self.spawn_new_pellet()
 
     def tick(self) -> None:
         # move all snakes before checking collisions
@@ -92,7 +92,7 @@ class Game:
             else:
                 is_good_pos = True
 
-    def update_snake(self, tick: int, snake_id: int, heading: Dir, is_alive: bool, body: deque[tuple[int, int]]) -> None:
+    def update_snake(self, snake_id: int, heading: Dir, is_alive: bool, body: list[tuple[int, int]]) -> None:
         if snake_id not in self.snakes:
             # just add the snake, I guess?
             self.spawn_new_snake(snake_id)
@@ -102,7 +102,7 @@ class Game:
         snake.is_alive = is_alive
         snake.body = body
 
-    def update_pellet(self, tick: int, pellet_id: int, pos_x: int, pos_y: int) -> None:
+    def update_pellet(self, pellet_id: int, pos_x: int, pos_y: int) -> None:
         if not self.pellet:
             self.pellet = Pellet(1, 1, self.width - 1 - 1, self.height - 1 - 1)
 

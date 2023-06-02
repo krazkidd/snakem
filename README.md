@@ -22,20 +22,30 @@ License: GPLv3 (see LICENSE.md file)
 - Python 3.11 or later
 - Docker CLI
 
-### Starting the game:
+### Starting the server (local):
+
+1. Open a terminal and navigate to the source root folder.
+2. Run `$ python3 -m venv .venv` to create the virtual Python environment.
+3. Run `$ source .venv/bin/activate` to enter the virtual environment.
+4. Run `$ pip install -r requirements.txt` to install all dependencies in the virtual environment.
+5. Run `$ uvicorn snakem.web.app:app --host 127.0.0.1 --port 9000 --log-level debug --reload` to start the server.
+
+### Starting the server (Docker):
 
 1. Open a terminal and navigate to the source root folder.
 2. Run `$ sudo docker build -t snakem-dev:latest .` to build the Docker image.
-3. Run `sudo docker run -d -p 11845:11845/udp --name snakem-dev snakem-dev:latest` to create the Docker container and start the server.
-4. Run `sudo docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' snakem-dev` to get the IP address of the container.
+3. Run `$ sudo docker run -d -p 9000:9000/tcp --name snakem-dev snakem-dev:latest` to create the Docker container and start the server.
+4. Run `$ sudo docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' snakem-dev` to get the IP address of the container.
 5. Update SERVER_HOST in `snakem/config/client.py` with the container IP address.
-6. Run `$ python3 -m snakem.net.client` to start the client.
 
-### Debugging the game:
+### Starting the client:
+
+1. Run `$ python3 -m snakem.net.client` to start the client.
+
+### Debugging:
 
 1. Install VS Code and the recommended extensions (see `.vscode/extensions.json`).
 2. In the Run and Debug view, launch **snakem server** or **snakem client**.
-3. Start the server or client as described in #starting-the-game.
 
 ### Deploy your own server:
 

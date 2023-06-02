@@ -35,5 +35,48 @@
   https://packaging.python.org/en/latest/
 
 - do we need to watch for desync between the game tick counter and the time elapsed?
+
   - we changed from static step counter to real timekeeper
   - need to add a prioritization system that drops old net messages or advances game ticks to catch up (e.g. if a game update has been seen, we only want to apply updates from that point)
+
+- use async queue
+  https://docs.python.org/3/library/asyncio-queue.html
+
+- review these and make some unit tests for client/server messaging
+  \# NOTE: This second example does not work because TestClient manages its own event loop.
+  \# See: https://www.starlette.io/testclient/#asynchronous-tests
+
+  \# async def main() -> None:
+  \# client = TestClient(app)
+
+  \# response = client.get("/api/health")
+
+  \# assert response.status_code == 200
+  \# assert response.json() == {"status": "alive"}
+
+  \# with client.websocket_connect('/ws') as ws:
+  \# await Client(ws, scr, config.STEP_TIME_MS, config.KEYS).start()
+
+  \# async def main() -> None:
+  \# async with AsyncClient(app=app, base_url=f'ws://{config.SERVER_HOST}:{config.SERVER_PORT}') as client:
+  \# response = await client.get("/api/health")
+
+  \# assert response.status_code == 200
+  \# assert response.json() == {"status": "alive"}
+  \# client.send()
+  \# #with client.websocket_connect('/ws') as ws:
+  \# # await Client(ws, scr, config.STEP_TIME_MS, config.KEYS).start()
+
+- fix server debug launch
+
+- client/server should only sleep long enough to advance the game when in game mode
+
+- client/server should sync on real time and not just game tick
+
+- client/server should maybe also use game instance ID in case game start/end messages get lost?
+
+  - how does websockets handle lost messages?
+
+- it appears to be possible to join a running game, and late players dont get assigned to a snake; might break something
+
+- add venv as build-time requirement
