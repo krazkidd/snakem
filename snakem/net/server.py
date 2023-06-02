@@ -61,6 +61,8 @@ class Server:
                     await self._handle_game_message(ws, msg_type, json_dict)
                 else:
                     await self._handle_lobby_message(ws, msg_type, json_dict)
+
+                #await asyncio.sleep(0)
         except WebSocketDisconnect:
             pass
         finally:
@@ -78,9 +80,13 @@ class Server:
                 if (now - last_step_time) // 1_000_000 >= self._step_time_ms:
                     self._game.tick()
 
-                    #TODO uncomment
-                    # # update all players with all snakes
-                    # await asyncio.wait([net.send_snake_update(ws, self._game.tick_num, snake_id, snake) for ws in self._players for snake_id, snake in self._game.snakes.items()])
+                    for ws in self._players:
+                        #TODO only do this if there is a new pellet
+                        await net.send_pellet_update(ws, self._game.tick_num, 0, self._game.pellet)
+
+                        #TODO only do this every few ticks
+                        # update all players with all snakes
+                        await asyncio.wait([asyncio.create_task(net.send_snake_update(ws, self._game.tick_num, snake_id, snake)) for snake_id, snake in self._game.snakes.items()])
 
                     # end game when all snakes are dead
                     #TODO the game should end when at most *one* snake is alive
@@ -130,23 +136,13 @@ class Server:
 
     async def _handle_game_message(self, ws: WebSocket, msg_type: MsgType, json_dict: dict) -> None:
         if ws in self._players:
-            do_update_clients = False
-
             if msg_type == MsgType.INPUT:
                 self._game.snakes[self._players[ws][1]].change_heading(net.unpack_input_message(json_dict)[1])
-                do_update_clients = True
-
-            if do_update_clients:
-                for sock in self._players:
-                    await net.send_pellet_update(sock, self._game.tick_num, 0, self._game.pellet)
-
-                    for snake_id, snake in self._game.snakes.items():
-                        await net.send_snake_update(sock, self._game.tick_num, snake_id, snake)
 
     async def _start_lobby_mode(self) -> None:
         self._game_state = GameState.LOBBY
 
-        await asyncio.wait([net.send_lobby_join_request(ws) for ws in self._players])
+        await asyncio.wait([asyncio.create_task(net.send_lobby_join_request(ws)) for ws in self._players])
 
     async def _start_game_mode(self, width: int, height: int) -> None:
         self._game_state = GameState.GAME
@@ -161,8 +157,8 @@ class Server:
         for ws in self._players:
             await net.send_pellet_update(ws, self._game.tick_num, 0, self._game.pellet)
 
-            for snake_id, snake in self._game.snakes.items():
-                await net.send_snake_update(ws, self._game.tick_num, snake_id, snake)
+            # update all players with all snakes
+            await asyncio.wait([asyncio.create_task(net.send_snake_update(ws, self._game.tick_num, snake_id, snake)) for snake_id, snake in self._game.snakes.items()])
 
         for ws in self._players:
             await net.send_start_message(ws, self._game.width, self._game.height, self._step_time_ms)

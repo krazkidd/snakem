@@ -69,6 +69,8 @@ class Client:
                     await self._handle_game_message(ws, msg_type, json_dict)
                 else:
                     await self._handle_lobby_message(ws, msg_type, json_dict)
+
+                await asyncio.sleep(0)
         except ConnectionClosedOK:
             pass
         except ConnectionClosedError:
