@@ -33,7 +33,7 @@ class Game:
         self.height: int = height
 
         self.snakes: dict[int, Snake] = dict()
-        self.pellet: Pellet | None = None
+        self.pellet: Pellet
 
         self.tick_num: int = 0
 

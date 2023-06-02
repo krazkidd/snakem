@@ -29,6 +29,8 @@ from .game import Game
 _last_debug_message: str = ''
 
 def show_message(scr: curses.window, msg: str) -> None:
+    logging.info(msg)
+
     erase(scr)
     height, width = get_window_size(scr)
     scr.addstr(height // 2, max(0, width // 2 - len(msg) // 2), msg)
