@@ -21,8 +21,6 @@
 #
 # *************************************************************************
 
-from collections import deque
-
 from .pellet import Pellet
 from .snake import Snake
 from .enums import Dir
@@ -94,7 +92,7 @@ class Game:
             else:
                 is_good_pos = True
 
-    def update_snake(self, snake_id: int, heading: Dir, is_alive: bool, body: deque[tuple[int, int]]) -> None:
+    def update_snake(self, snake_id: int, heading: Dir, is_alive: bool, body: list[tuple[int, int]]) -> None:
         if snake_id not in self.snakes:
             # just add the snake, I guess?
             self.spawn_new_snake(snake_id)

@@ -24,8 +24,6 @@
 import json
 import logging
 
-from collections import deque
-
 from starlette.websockets import WebSocket # aka fastapi.WebSocket
 from websockets.client import WebSocketClientProtocol
 
@@ -95,13 +93,8 @@ async def send_snake_update(ws: WebSocketClientProtocol | WebSocket, tick: int, 
         'body': snake.body
     })
 
-def unpack_snake_update(json_dict: dict) -> tuple[int, int, Dir, bool, deque[tuple[int, int]]]:
-    #TODO get the body
-    body: deque[tuple[int, int]] = deque()
-    for pos_x, pos_y in body:
-        body.append((pos_x, pos_y))
-
-    return json_dict['tick'], json_dict['snake_id'], Dir(json_dict['heading']), json_dict['is_alive'] == 'true', body
+def unpack_snake_update(json_dict: dict) -> tuple[int, int, Dir, bool, list[tuple[int, int]]]:
+    return json_dict['tick'], json_dict['snake_id'], Dir(json_dict['heading']), json_dict['is_alive'] == 'true', json_dict['body']
 
 async def send_lobby_join_request(ws: WebSocketClientProtocol | WebSocket) -> None:
     await send_message(ws, MsgType.LOBBY_JOIN)
