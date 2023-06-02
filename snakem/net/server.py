@@ -65,6 +65,10 @@ class Server:
                 #await asyncio.sleep(0)
         except WebSocketDisconnect:
             pass
+        except asyncio.exceptions.TimeoutError:
+            pass
+        except Exception as ex:
+            pass
         finally:
             del self._players[ws]
 

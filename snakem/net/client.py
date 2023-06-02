@@ -75,6 +75,10 @@ class Client:
             pass
         except ConnectionClosedError:
             pass
+        except asyncio.exceptions.TimeoutError:
+            pass
+        except Exception as ex:
+            pass
         finally:
             del self._socket
 
@@ -86,27 +90,30 @@ class Client:
 
         last_step_time = time.monotonic_ns()
 
-        while 1:
-            input_char = display.get_key(self._stdscr)
-
-            while input_char != curses.ERR:
-                await self._handle_input(input_char)
-
+        try:
+            while 1:
                 input_char = display.get_key(self._stdscr)
 
-            if self._game_state == GameState.GAME:
-                now = time.monotonic_ns()
+                while input_char != curses.ERR:
+                    await self._handle_input(input_char)
 
-                if (now - last_step_time) // 1_000_000 >= self._step_time_ms:
-                    self._game.tick()
+                    input_char = display.get_key(self._stdscr)
 
-                    display.show_game(self._stdscr, self._game)
+                if self._game_state == GameState.GAME:
+                    now = time.monotonic_ns()
 
-                    last_step_time = now
+                    if (now - last_step_time) // 1_000_000 >= self._step_time_ms:
+                        self._game.tick()
 
-                await asyncio.sleep(self._step_time_ms / 1000)
-            else:
-                await asyncio.sleep(0.3)
+                        display.show_game(self._stdscr, self._game)
+
+                        last_step_time = now
+
+                    await asyncio.sleep(self._step_time_ms / 1000)
+                else:
+                    await asyncio.sleep(0.3)
+        except Exception as ex:
+            pass
 
     async def _poll_for_input(self) -> int:
         return self._stdscr.getch()
