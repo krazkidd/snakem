@@ -12,7 +12,7 @@
         "--port",
         "9000",
         "--log-level",
-        "info"
+        "debug"
       ],
       "jinja": false,
       "justMyCode": false
