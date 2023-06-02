@@ -68,3 +68,15 @@
   \# # await Client(ws, scr, config.STEP_TIME_MS, config.KEYS).start()
 
 - fix server debug launch
+
+- client/server should only sleep long enough to advance the game when in game mode
+
+- client/server should sync on real time and not just game tick
+
+- client/server should maybe also use game instance ID in case game start/end messages get lost?
+
+  - how does websockets handle lost messages?
+
+- it appears to be possible to join a running game, and late players dont get assigned to a snake; might break something
+
+- add venv as build-time requirement
