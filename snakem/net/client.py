@@ -99,11 +99,11 @@ class Client:
                 now = time.monotonic_ns()
 
                 if (now - last_step_time) // 1_000_000 >= self._step_time_ms:
-                    last_step_time = now
-
                     self._game.tick()
 
                     display.show_game(self._stdscr, self._game)
+
+                    last_step_time = now
 
                 await asyncio.sleep(self._step_time_ms / 1000)
             else:

@@ -83,8 +83,6 @@ class Server:
                 now = time.monotonic_ns()
 
                 if (now - last_step_time) // 1_000_000 >= self._step_time_ms:
-                    last_step_time = now
-
                     self._game.tick()
 
                     #TODO uncomment
@@ -100,6 +98,8 @@ class Server:
                         #TODO consider returning from this and letting the thread end
 
                         await self._start_lobby_mode()
+
+                    last_step_time = now
 
                 await asyncio.sleep(self._step_time_ms / 1000)
             else:
