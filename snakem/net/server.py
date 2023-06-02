@@ -25,43 +25,16 @@ import asyncio
 import logging
 import time
 
-from typing import Any
+from starlette.websockets import WebSocket, WebSocketDisconnect # aka fastapi.WebSocket
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-
-from ..config import server as config
 from ..net import net
 from ..game import game
 
 from .enums import GameState, MsgType
 
-app = FastAPI()
-
-@app.get("/api/health")
-async def api_health():
-    return {"status": "alive"}
-
-@app.websocket("/ws")
-#@app.websocket("/ws/")
-#@app.websocket("/ws/{client_id}")
-async def websocket_endpoint(ws: WebSocket, client_id: int | None = None):
-    #TODO if client_id != None, then we should not accept() and hand them off to the server
-
-    await ws.accept()
-
-    try:
-        while 1:
-            await asyncio.sleep(1)
-            await net.send_motd(ws, config.MOTD)
-            # await manager.send_personal_message(f"You wrote: {data}", ws)
-            # await manager.broadcast(f"Client #{client_id} says: {data}")
-    except WebSocketDisconnect:
-        # manager.disconnect(ws)
-        # await manager.broadcast(f"Client #{client_id} left the chat")
-        pass
-
 class Server:
-    def __init__(self, width: int, height: int, step_time_ms: int) -> None:
+    def __init__(self, motd: str, width: int, height: int, step_time_ms: int) -> None:
+        self._motd: str = motd
         self._width: int = width
         self._height: int = height
         self._step_time_ms: int = step_time_ms
@@ -74,60 +47,65 @@ class Server:
         self._game_state: GameState = GameState.LOBBY
         self._game: game.Game
 
-    async def start(self) -> Any: # Awaitable
+    async def connect_client(self, ws: WebSocket) -> None:
+        #TODO accessing self._players needs thread safety if we are going to multithread
+
+        self._players[ws] = (MsgType.NOT_READY, None)
+
+        try:
+            await net.send_motd(ws, self._motd)
+
+            async for json_dict in ws.iter_json():
+                msg_type = MsgType(json_dict['_msg_type'])
+
+                #TODO print address as first argument
+                logging.debug('NETMSG (from %s): <%s>', 'TODO', msg_type.name)
+
+                if self._game_state == GameState.GAME:
+                    await self._handle_game_message(ws, msg_type, json_dict)
+                else:
+                    await self._handle_lobby_message(ws, msg_type, json_dict)
+        except WebSocketDisconnect:
+            pass
+        finally:
+            #TODO if the connection is still in an open state, send a quit message
+            #await websocket.close(code=1000, reason=None)
+
+            del self._players[ws]
+
+    async def start(self) -> None:
         logging.info('Server started.')
 
         last_step_time = time.monotonic_ns()
 
-        try:
-            while 1:
-                #TODO handle disconnects by handling WebSocketDisconnect exception
-                # try:
-                #     while 1:
-                #         data = await websocket.receive_text()
-                #         # await manager.send_personal_message(f"You wrote: {data}", websocket)
-                #         # await manager.broadcast(f"Client #{client_id} says: {data}")
-                # except WebSocketDisconnect:
-                #     websocket.disconnect(websocket)
-                #     await websocket.broadcast(f"Client #{client_id} left the chat")
+        while 1:
+            if self._game_state == GameState.GAME:
+                now = time.monotonic_ns()
 
-                done, _ = await asyncio.wait([net.receive_message(ws) for ws in self._players.keys], return_when=asyncio.FIRST_COMPLETED)
+                if (now - last_step_time) // 1_000_000 >= self._step_time_ms:
+                    last_step_time = now
 
-                #TODO do i need to cancel pending tasks?
-                #TODO do i need to cancel done tasks if i don't consume them?
+                    self._game.tick()
 
-                for awaitable in done:
-                    ws, msg_type, json = await awaitable
+                    #TODO uncomment
+                    # # update all players with all snakes
+                    # await asyncio.wait([net.send_snake_update(ws, self._game.tick_num, snake_id, snake) for ws in self._players for snake_id, snake in self._game.snakes.items()])
 
-                    if self._game_state == GameState.GAME:
-                        await self._handle_game_message(ws, msg_type, json)
+                    # end game when all snakes are dead
+                    #TODO the game should end when at most *one* snake is alive
+                    for snake in self._game.snakes.values():
+                        if snake.is_alive:
+                            break
                     else:
-                        await self._handle_lobby_message(ws, msg_type, json)
+                        #TODO consider returning from this and letting the thread end
 
-                if self._game_state == GameState.GAME:
-                    now = time.monotonic_ns()
+                        await self._start_lobby_mode()
 
-                    if (now - last_step_time) // 1_000_000 >= self._step_time_ms:
-                        last_step_time = now
+                await asyncio.sleep(self._step_time_ms / 1000)
+            else:
+                await asyncio.sleep(1)
 
-                        self._game.tick()
-
-                        # update all players with all snakes
-                        await asyncio.wait([net.send_snake_update(ws, self._game.tick_num, snake_id, snake) for ws in self._players for snake_id, snake in self._game.snakes.items()])
-
-                        # end game when all snakes are dead
-                        #TODO the game should end when at most *one* snake is alive
-                        for snake in self._game.snakes.values():
-                            if snake.is_alive:
-                                break
-                        else:
-                            await asyncio.wait([net.send_lobby_join_request(ws) for ws in self._players])
-
-                            self._start_lobby_mode()
-        except Exception:
-            logging.exception('Unknown exception.')
-
-    async def _handle_lobby_message(self, ws: WebSocket, msg_type: MsgType, json: dict) -> None:
+    async def _handle_lobby_message(self, ws: WebSocket, msg_type: MsgType, json_dict: dict) -> None:
         if ws in self._players:
             _, snake_id = self._players[ws]
 
@@ -154,12 +132,12 @@ class Server:
                 else:
                     await net.send_quit_message(ws)  # LOBBY_QUIT is used for join rejection
 
-    async def _handle_game_message(self, ws: WebSocket, msg_type: MsgType, json: dict) -> None:
+    async def _handle_game_message(self, ws: WebSocket, msg_type: MsgType, json_dict: dict) -> None:
         if ws in self._players:
             do_update_clients = False
 
             if msg_type == MsgType.INPUT:
-                self._game.snakes[self._players[ws][1]].change_heading(net.unpack_input_message(json)) # type: ignore
+                self._game.snakes[self._players[ws][1]].change_heading(net.unpack_input_message(json_dict)[1])
                 do_update_clients = True
 
             if do_update_clients:
@@ -169,8 +147,10 @@ class Server:
                     for snake_id, snake in self._game.snakes.items():
                         await net.send_snake_update(sock, self._game.tick_num, snake_id, snake)
 
-    def _start_lobby_mode(self) -> None:
+    async def _start_lobby_mode(self) -> None:
         self._game_state = GameState.LOBBY
+
+        await asyncio.wait([net.send_lobby_join_request(ws) for ws in self._players])
 
     async def _start_game_mode(self, width: int, height: int) -> None:
         self._game_state = GameState.GAME
@@ -178,9 +158,9 @@ class Server:
         self._game = game.Game(width, height)
 
         for ws, player_tuple in self._players.items():
-            self._players[addr] = (player_tuple[0], self._game.spawn_new_snake())
+            self._players[ws] = (player_tuple[0], self._game.spawn_new_snake())
 
-        self._game.spawn_new_pellet()
+        #TODO send snake and pellet statuses with start message
 
         for ws in self._players:
             await net.send_pellet_update(ws, self._game.tick_num, 0, self._game.pellet)
@@ -188,12 +168,5 @@ class Server:
             for snake_id, snake in self._game.snakes.items():
                 await net.send_snake_update(ws, self._game.tick_num, snake_id, snake)
 
-        for addr in self._players:
-            await net.send_start_message(ws, self._game.width, self._game.height)
-
-if __name__ == '__main__':
-    #TODO add timestamp (with format)
-    #logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
-    logging.basicConfig(level=logging.DEBUG)
-
-    #TODO Server(config.WIN_WIDTH, config.WIN_HEIGHT, config.STEP_TIME_MS).start()
+        for ws in self._players:
+            await net.send_start_message(ws, self._game.width, self._game.height, self._step_time_ms)

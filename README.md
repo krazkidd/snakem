@@ -28,7 +28,7 @@ License: GPLv3 (see LICENSE.md file)
 2. Run `$ python3 -m venv .venv` to create the virtual Python environment.
 3. Run `$ source .venv/bin/activate` to enter the virtual environment.
 4. Run `$ pip install -r requirements.txt` to install all dependencies in the virtual environment.
-5. Run `$ uvicorn snakem.net.server:app --host 127.0.0.1 --port 9000 --log-level info` to start the server.
+5. Run `$ uvicorn snakem.web.app:app --host 127.0.0.1 --port 9000 --log-level debug --reload` to start the server.
 
 ### Starting the server (Docker):
 

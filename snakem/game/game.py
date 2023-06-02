@@ -37,6 +37,8 @@ class Game:
 
         self.tick_num: int = 0
 
+        self.spawn_new_pellet()
+
     def tick(self) -> None:
         # move all snakes before checking collisions
         for snake in self.snakes.values():

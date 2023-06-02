@@ -22,4 +22,4 @@ USER appuser
 EXPOSE 9000/tcp
 
 # During debugging, this entry point will be overridden. For more information, please refer to https://aka.ms/vscode-docker-python-debug
-CMD ["uvicorn", "snakem.net.server:app", "--host", "0.0.0.0", "--port", "9000", "--log-level", "info"]
+CMD ["uvicorn", "snakem.web.app:app", "--host", "0.0.0.0", "--port", "9000", "--log-level", "info"]

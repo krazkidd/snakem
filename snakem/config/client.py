@@ -5,9 +5,6 @@ import curses.ascii
 SERVER_HOST: str = '127.0.0.1'
 SERVER_PORT: int = 9000
 
-# how fast to advance the game state
-STEP_TIME_MS: int = 100
-
 KEYS: dict = {
     'LOBBY_QUIT': [curses.ascii.ESC, ],
     'LOBBY_REFRESH': [ord('X'), ord('x'), ],

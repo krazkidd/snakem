@@ -22,17 +22,16 @@
 # *************************************************************************
 
 import asyncio
+import json
 import logging
+import select
 import time
 import curses
 import os
 import sys
 
-from collections.abc import Awaitable
+from websockets.exceptions import ConnectionClosedOK, ConnectionClosedError
 from websockets.client import connect, WebSocketClientProtocol
-
-# must come after Awaitable
-import aioconsole
 
 from ..config import client as config
 from ..net import net
@@ -40,85 +39,98 @@ from ..game import game, display
 from ..game.enums import Dir
 
 from .enums import GameState, MsgType
-from .server import app
 
 class Client:
-    def __init__(self, ws: WebSocketClientProtocol, scr: curses.window, step_time_ms: int, keys: dict) -> None:
-        self._socket: WebSocketClientProtocol = ws
+    def __init__(self, scr: curses.window, keys: dict) -> None:
+        self._motd: str | None = None
+        self._step_time_ms: int = 100
 
         self._stdscr: curses.window = scr
-
-        self._step_time_ms: int = step_time_ms
         self._keys: dict = keys
 
-        self._motd: str | None = None
+        self._socket: WebSocketClientProtocol
+
         self._game_state: GameState = GameState.LOBBY
         self._game: game.Game
 
-    async def start(self) -> Awaitable:
-        display.show_message(self._stdscr, 'Contacting server...')
-
-        # contact the server immediately
-        # async with asyncio.TaskGroup() as tg:
-        #     task1 = tg.create_task(net.send_hello_message(self._socket))
-        #     task2 = tg.create_task(net.send_lobby_join_request(self._socket))
-        await net.send_hello_message(self._socket)
-        await net.send_lobby_join_request(self._socket)
-
-        last_step_time = time.monotonic_ns()
+    async def connect_client(self, ws: WebSocketClientProtocol) -> None:
+        self._socket = ws
 
         try:
             while 1:
-                done, pending = await asyncio.wait([
-                    asyncio.create_task(aioconsole.ainput(), name='stdin'),
-                    asyncio.create_task(net.receive_message(self._socket), name='ws')
-                ], return_when=asyncio.FIRST_COMPLETED)
+                json_dict = json.loads(await ws.recv())
 
-                #TODO handle *all* net messages first before checking input?
+                msg_type = MsgType(json_dict['_msg_type'])
 
-                input_char = display.get_key(self._stdscr)
-                if input_char != curses.ERR:
-                    await self._handle_input(input_char)
+                #TODO print address as first argument
+                logging.debug('NETMSG (from %s): <%s>', 'TODO', msg_type.name)
+
+                if self._game_state == GameState.GAME:
+                    await self._handle_game_message(ws, msg_type, json_dict)
                 else:
-                    #TODO is this right?
-                    ws, msg_type, json = await net.receive_message(self._socket)
+                    await self._handle_lobby_message(ws, msg_type, json_dict)
+        except ConnectionClosedOK:
+            pass
+        except ConnectionClosedError:
+            pass
+        finally:
+            #TODO if the connection is still in an open state, send a quit message
+            #await ws.close(code=1000, reason=None)
 
-                    if self._game_state == GameState.GAME:
-                        self._handle_game_message(msg_type, json)
-                    else:
-                        self._handle_lobby_message(msg_type, json)
+            del self._socket
+
+    async def start(self) -> None:
+        display.show_message(self._stdscr, 'Contacting server...')
+
+        poll = select.poll()
+        poll.register(sys.stdin, select.POLLIN)
+
+        last_step_time = time.monotonic_ns()
+
+        #TODO remove try-catch
+        try:
+            while 1:
+                input_char = display.get_key(self._stdscr)
+
+                while input_char != curses.ERR:
+                    await self._handle_input(input_char)
+
+                    input_char = display.get_key(self._stdscr)
 
                 if self._game_state == GameState.GAME:
                     now = time.monotonic_ns()
 
-                    #TODO get STEP_TIME_MS from server during game setup
                     if (now - last_step_time) // 1_000_000 >= self._step_time_ms:
                         last_step_time = now
 
+                        self._game.tick()
+
                         display.show_game(self._stdscr, self._game)
+
+                    await asyncio.sleep(self._step_time_ms / 1000)
+                else:
+                    await asyncio.sleep(0.3)
+
+        except Exception as ex:
+            pass
         finally:
-            await net.send_quit_message(self._socket)
-            self._socket.close()
+            pass
 
     async def _poll_for_input(self) -> int:
-        return self._stdscr.getch();
+        return self._stdscr.getch()
 
-    def _handle_lobby_message(self, msg_type: MsgType, json: dict) -> None:
-        if msg_type == MsgType.LOBBY_JOIN:
+    async def _handle_lobby_message(self, ws: WebSocketClientProtocol, msg_type: MsgType, json_dict: dict) -> None:
+        if msg_type == MsgType.MOTD:
+            self._start_lobby_mode(json_dict['motd'])
+        elif msg_type == MsgType.LOBBY_JOIN:
             self._start_lobby_mode()
         elif msg_type == MsgType.LOBBY_QUIT:
-            display.show_debug(self._stdscr, 'Lobby rejected your join request.')
             self._start_lobby_mode()
         elif msg_type == MsgType.START:
-            width, height = net.unpack_start_message(json)
+            width, height, step_time_ms = net.unpack_start_message(json_dict)
+            self._start_game_mode(width, height, step_time_ms)
 
-            self._start_game_mode(width, height)
-        elif msg_type == MsgType.MOTD:
-            self._motd = json['motd']
-
-            self._start_lobby_mode()
-
-    def _handle_game_message(self, msg_type: MsgType, msg_body: dict) -> None:
+    async def _handle_game_message(self, ws: WebSocketClientProtocol, msg_type: MsgType, msg_body: dict) -> None:
         if msg_type == MsgType.SNAKE_UPDATE:
             #TODO use tick value to determine if it's safe to update game state
             #     or if it's out of date (compare to current game tick value)
@@ -139,10 +151,7 @@ class Client:
             if input_char in self._keys['LOBBY_QUIT']:
                 sys.exit()
             elif input_char in self._keys['LOBBY_REFRESH']:
-                await asyncio.wait([
-                    net.send_hello_message(self._socket),
-                    net.send_lobby_join_request(self._socket)
-                ])
+                await net.send_lobby_join_request(self._socket)
             elif input_char in self._keys['LOBBY_READY']:
                 await net.send_ready_message(self._socket)
         elif self._game_state == GameState.GAME:
@@ -159,17 +168,24 @@ class Client:
             elif input_char in self._keys['MV_RIGHT']:
                 await net.send_input_message(self._socket, self._game.tick_num, Dir.RIGHT)
 
-    def _start_lobby_mode(self) -> None:
+    def _start_lobby_mode(self, motd: str | None = None) -> None:
+        if (motd):
+            self._motd = motd
+
         self._game_state = GameState.LOBBY
 
         display.show_lobby(self._stdscr, self._motd)
 
-    def _start_game_mode(self, width: int, height: int) -> None:
-        self._game_state = GameState.GAME
+    def _start_game_mode(self, width: int, height: int, step_time_ms: int) -> None:
+        self._step_time_ms = step_time_ms
 
+        self._game_state = GameState.GAME
         self._game = game.Game(width, height)
 
         display.show_game(self._stdscr, self._game)
+
+_client: Client
+_client_task: asyncio.Task
 
 if __name__ == '__main__':
     #TODO add timestamp (with format)
@@ -186,9 +202,12 @@ if __name__ == '__main__':
         scr.nodelay(True)
 
         async def main() -> None:
-            #TODO provide client_id to reconnect (save to file?)
+            global _client, _client_task
+            _client = Client(scr, config.KEYS)
+            _client_task = asyncio.create_task(_client.start())
+
             async with connect(f'ws://{config.SERVER_HOST}:{config.SERVER_PORT}/ws') as ws:
-                await Client(ws, scr, config.STEP_TIME_MS, config.KEYS).start()
+                await _client.connect_client(ws)
 
         asyncio.run(main())
 
