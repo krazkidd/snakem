@@ -87,34 +87,27 @@ class Client:
 
         last_step_time = time.monotonic_ns()
 
-        #TODO remove try-catch
-        try:
-            while 1:
+        while 1:
+            input_char = display.get_key(self._stdscr)
+
+            while input_char != curses.ERR:
+                await self._handle_input(input_char)
+
                 input_char = display.get_key(self._stdscr)
 
-                while input_char != curses.ERR:
-                    await self._handle_input(input_char)
+            if self._game_state == GameState.GAME:
+                now = time.monotonic_ns()
 
-                    input_char = display.get_key(self._stdscr)
+                if (now - last_step_time) // 1_000_000 >= self._step_time_ms:
+                    last_step_time = now
 
-                if self._game_state == GameState.GAME:
-                    now = time.monotonic_ns()
+                    self._game.tick()
 
-                    if (now - last_step_time) // 1_000_000 >= self._step_time_ms:
-                        last_step_time = now
+                    display.show_game(self._stdscr, self._game)
 
-                        self._game.tick()
-
-                        display.show_game(self._stdscr, self._game)
-
-                    await asyncio.sleep(self._step_time_ms / 1000)
-                else:
-                    await asyncio.sleep(0.3)
-
-        except Exception as ex:
-            pass
-        finally:
-            pass
+                await asyncio.sleep(self._step_time_ms / 1000)
+            else:
+                await asyncio.sleep(0.3)
 
     async def _poll_for_input(self) -> int:
         return self._stdscr.getch()
