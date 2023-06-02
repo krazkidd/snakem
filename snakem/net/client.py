@@ -74,9 +74,6 @@ class Client:
         except ConnectionClosedError:
             pass
         finally:
-            #TODO if the connection is still in an open state, send a quit message
-            #await ws.close(code=1000, reason=None)
-
             del self._socket
 
     async def start(self) -> None:
@@ -142,6 +139,9 @@ class Client:
     async def _handle_input(self, input_char: int) -> None:
         if self._game_state == GameState.LOBBY:
             if input_char in self._keys['LOBBY_QUIT']:
+                #TODO if the connection is still in an open state, send a quit message
+                #await self._socket.close(code=1000, reason=None)
+
                 sys.exit()
             elif input_char in self._keys['LOBBY_REFRESH']:
                 await net.send_lobby_join_request(self._socket)

@@ -48,10 +48,6 @@ class Server:
         self._game: game.Game
 
     async def connect_client(self, ws: WebSocket) -> None:
-        #TODO accessing self._players needs thread safety if we are going to multithread
-
-        self._players[ws] = (MsgType.NOT_READY, None)
-
         try:
             await net.send_motd(ws, self._motd)
 
@@ -68,9 +64,6 @@ class Server:
         except WebSocketDisconnect:
             pass
         finally:
-            #TODO if the connection is still in an open state, send a quit message
-            #await websocket.close(code=1000, reason=None)
-
             del self._players[ws]
 
     async def start(self) -> None:
@@ -113,6 +106,9 @@ class Server:
                 await net.send_lobby_join_request(ws)  # LOBBY_JOIN is used for join confirmation
                 self._players[ws] = (MsgType.NOT_READY, snake_id)  # reset READY status
             elif msg_type == MsgType.LOBBY_QUIT:
+                #TODO if the connection is still in an open state, send a quit message
+                #await websocket.close(code=1000, reason=None)
+
                 del self._players[ws]
             elif msg_type == MsgType.READY:
                 self._players[ws] = (MsgType.READY, snake_id)
