@@ -184,9 +184,6 @@ class Client:
 
         display.show_game(self._stdscr, self._game)
 
-_client: Client
-_client_task: asyncio.Task
-
 if __name__ == '__main__':
     #TODO add timestamp (with format)
     #logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
@@ -202,12 +199,12 @@ if __name__ == '__main__':
         scr.nodelay(True)
 
         async def main() -> None:
-            global _client, _client_task
-            _client = Client(scr, config.KEYS)
-            _client_task = asyncio.create_task(_client.start())
+            client = Client(scr, config.KEYS)
+
+            asyncio.create_task(client.start())
 
             async with connect(f'ws://{config.SERVER_HOST}:{config.SERVER_PORT}/ws') as ws:
-                await _client.connect_client(ws)
+                await client.connect_client(ws)
 
         asyncio.run(main())
 
