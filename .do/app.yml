@@ -17,10 +17,7 @@ services:
       deploy_on_push: true
       repo: krazkidd/snakem
     health_check:
-      period_seconds: 90
-      timeout_seconds: 30
-      port: 11844
-      initial_delay_seconds: 10
+      http_path: /api/health
     http_port: 9000
     instance_count: 1
     instance_size_slug: basic-xxs
