@@ -153,6 +153,7 @@ class Server:
             self._players[ws] = (player_tuple[0], self._game.spawn_new_snake())
 
         #TODO send snake and pellet statuses with start message
+        #     and get rid of this double loop
 
         for ws in self._players:
             await net.send_pellet_update(ws, self._game.tick_num, 0, self._game.pellet)
