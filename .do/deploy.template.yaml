@@ -1,0 +1,12 @@
+spec:
+  name: snakem-app-dev
+  services:
+    - dockerfile_path: Dockerfile
+      git:
+        branch: master
+        repo_clone_url: https://github.com/krazkidd/snakem.git
+      health_check:
+        http_path: /api/health
+      http_port: 9000
+      name: snakem-server
+      source_dir: /
