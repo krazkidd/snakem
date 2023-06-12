@@ -21,7 +21,12 @@
 #
 # *************************************************************************
 
+import random
+
+from typing import Any
 from fastapi import APIRouter
+
+from ...config import server as config
 
 router = APIRouter(
     prefix="/api",
@@ -33,4 +38,16 @@ router = APIRouter(
 @router.get("/health")
 async def api_health():
     #TODO return a health status object and document the type in the decorator (for reusability)
-    return {"status": "alive"}
+
+@router.get("/motd")
+async def get_motd() -> str:
+    return config.MOTD
+
+@router.get("/highscores")
+async def get_highscores() -> list[int]:
+    scores: list[int] = [ random.randint(300, 400) ]
+
+    for i in range(1, 10):
+        scores.append(random.randint(0, scores[i - 1]))
+
+    return scores
