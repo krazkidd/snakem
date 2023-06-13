@@ -21,6 +21,7 @@
 #
 # *************************************************************************
 
+import math
 import random
 
 from typing import Any
@@ -48,6 +49,6 @@ async def get_highscores() -> list[int]:
     scores: list[int] = [ random.randint(300, 400) ]
 
     for i in range(1, 10):
-        scores.append(random.randint(0, scores[i - 1]))
+        scores.append(math.ceil(scores[i - 1] * random.randint(80, 100) / 100))
 
     return scores
