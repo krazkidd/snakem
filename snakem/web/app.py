@@ -1,18 +1,14 @@
+from starlette.staticfiles import StaticFiles
 from fastapi import FastAPI
-from fastapi.responses import RedirectResponse
 
-from .routers import api, view, ws
+from .routers import api, ws
 
 app = FastAPI()
 
 app.include_router(api.router)
 app.include_router(ws.router)
 
-app.include_router(view.router)
-
-@app.get("/", response_class=RedirectResponse)
-async def view_root():
-    return '/view'
+app.mount("/", StaticFiles(directory="web/", html=True), name="web")
 
 if __name__ == '__main__':
     import uvicorn
