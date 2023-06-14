@@ -24,8 +24,8 @@
 import math
 import random
 
-from typing import Any
 from fastapi import APIRouter
+from pydantic import BaseModel
 
 from ...config import server as config
 
@@ -36,14 +36,13 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-class HealthCheck:
-    def __init__(self, alive: bool = True, ready: bool = True) -> None:
-        self.alive: bool = alive
-        self.ready: bool = ready
+class HealthCheck(BaseModel):
+    alive: bool
+    ready: bool
 
 @router.get("/health")
 async def get_health() -> HealthCheck:
-    return HealthCheck()
+    return HealthCheck(alive=True, ready=True)
 
 @router.get("/motd")
 async def get_motd() -> str:
