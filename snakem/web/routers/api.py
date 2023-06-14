@@ -40,6 +40,11 @@ class HealthCheck(BaseModel):
     alive: bool
     ready: bool
 
+class HighScoreItem(BaseModel):
+    rank: int
+    score: int
+    name: str | None
+
 @router.get("/health")
 async def get_health() -> HealthCheck:
     return HealthCheck(alive=True, ready=True)
@@ -49,10 +54,10 @@ async def get_motd() -> str:
     return config.MOTD
 
 @router.get("/highscores")
-async def get_highscores() -> list[int]:
-    scores: list[int] = [ random.randint(300, 400) ]
+async def get_highscores() -> list[HighScoreItem]:
+    scores: list[HighScoreItem] = [ HighScoreItem(rank=1,score=random.randint(300, 400), name=None) ]
 
     for i in range(1, 10):
-        scores.append(math.ceil(scores[i - 1] * random.randint(80, 100) / 100))
+        scores.append(HighScoreItem(rank=i + 1, score=math.ceil(scores[i - 1].score * random.randint(80, 100) / 100), name=None))
 
     return scores
