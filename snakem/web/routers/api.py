@@ -21,7 +21,13 @@
 #
 # *************************************************************************
 
+import math
+import random
+
 from fastapi import APIRouter
+from pydantic import BaseModel
+
+from ...config import server as config
 
 router = APIRouter(
     prefix="/api",
@@ -30,7 +36,28 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
+class HealthCheck(BaseModel):
+    alive: bool
+    ready: bool
+
+class HighScoreItem(BaseModel):
+    rank: int
+    score: int
+    name: str | None
+
 @router.get("/health")
-async def api_health():
-    #TODO return a health status object and document the type in the decorator (for reusability)
-    return {"status": "alive"}
+async def get_health() -> HealthCheck:
+    return HealthCheck(alive=True, ready=True)
+
+@router.get("/motd")
+async def get_motd() -> str:
+    return config.MOTD
+
+@router.get("/highscores")
+async def get_highscores() -> list[HighScoreItem]:
+    scores: list[HighScoreItem] = [ HighScoreItem(rank=1,score=random.randint(300, 400), name=None) ]
+
+    for i in range(1, 10):
+        scores.append(HighScoreItem(rank=i + 1, score=math.ceil(scores[i - 1].score * random.randint(80, 100) / 100), name=None))
+
+    return scores

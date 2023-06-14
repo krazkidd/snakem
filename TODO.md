@@ -52,7 +52,7 @@
   \# response = client.get("/api/health")
 
   \# assert response.status_code == 200
-  \# assert response.json() == {"status": "alive"}
+  \# assert response.json() == {"alive": true, "ready", true}
 
   \# with client.websocket_connect('/ws') as ws:
   \# await Client(ws, scr, config.STEP_TIME_MS, config.KEYS).start()
@@ -62,7 +62,7 @@
   \# response = await client.get("/api/health")
 
   \# assert response.status_code == 200
-  \# assert response.json() == {"status": "alive"}
+  \# assert response.json() == {"alive": true, "ready", true}
   \# client.send()
   \# #with client.websocket_connect('/ws') as ws:
   \# # await Client(ws, scr, config.STEP_TIME_MS, config.KEYS).start()
