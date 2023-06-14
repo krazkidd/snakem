@@ -17,9 +17,6 @@
       </div>
     </div>
   </main>
-
-  <main>
-  </main>
 </template>
 
 <style>
