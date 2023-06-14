@@ -36,9 +36,14 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
+class HealthCheck:
+    def __init__(self, alive: bool = True, ready: bool = True) -> None:
+        self.alive: bool = alive
+        self.ready: bool = ready
+
 @router.get("/health")
-async def api_health():
-    #TODO return a health status object and document the type in the decorator (for reusability)
+async def get_health() -> HealthCheck:
+    return HealthCheck()
 
 @router.get("/motd")
 async def get_motd() -> str:
