@@ -1,4 +1,4 @@
-# TODO
+# TODO.md
 
 - arrange config files to make use of built-in config supported
   https://docs.python.org/3/library/configparser.html
@@ -80,3 +80,15 @@
 - it appears to be possible to join a running game, and late players dont get assigned to a snake; might break something
 
 - add venv as build-time requirement
+
+- install debugpy extension or other remote debug extension to work with container
+
+  - or try vs core remote?
+
+- are these conflicting with each other? the prettier status is read and prettification doesnt seem to be working
+  - "devDependencies": {
+    "@vue/eslint-config-prettier": "^7.1.0",
+    "eslint": "^8.39.0",
+    "eslint-plugin-vue": "^9.11.0",
+    "prettier": "^2.8.8",
+    }
