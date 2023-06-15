@@ -1,4 +1,3 @@
-# For more information, please refer to https://aka.ms/vscode-docker-python
 FROM node:latest AS build-vue
 
 # Install node requirements
@@ -18,7 +17,6 @@ RUN npm run build
 #######################################################################
 #######################################################################
 
-# For more information, please refer to https://aka.ms/vscode-docker-python
 FROM python:3-slim AS server
 
 # Keeps Python from generating .pyc files in the container
