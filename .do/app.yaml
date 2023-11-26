@@ -6,13 +6,27 @@ domains:
 - domain: snakem.app.xericode.dev
   type: PRIMARY
   zone: app.xericode.dev
+features:
+- buildpack-stack=ubuntu-22
 ingress:
   rules:
   - component:
-      name: snakem-server
+      name: web
     match:
       path:
         prefix: /
+  - component:
+      name: server
+      preserve_path_prefix: true
+    match:
+      path:
+        prefix: /api
+  - component:
+      name: server
+      preserve_path_prefix: true
+    match:
+      path:
+        prefix: /ws
 name: snakem-app
 region: nyc
 services:
@@ -26,5 +40,15 @@ services:
   http_port: 9000
   instance_count: 1
   instance_size_slug: basic-xxs
-  name: snakem-server
+  name: server
   source_dir: /
+static_sites:
+- build_command: npm run build
+  environment_slug: python
+  github:
+    branch: split-web
+    deploy_on_push: true
+    repo: krazkidd/snakem
+  name: web
+  output_dir: dist
+  source_dir: /web
