@@ -3,9 +3,9 @@ alerts:
 - rule: DOMAIN_FAILED
 - rule: DEPLOYMENT_LIVE
 domains:
-- domain: snakem.xericode.dev
+- domain: snakem.app.xericode.dev
   type: PRIMARY
-  zone: xericode.dev
+  zone: app.xericode.dev
 ingress:
   rules:
   - component:
