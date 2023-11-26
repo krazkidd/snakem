@@ -13,7 +13,7 @@ ingress:
     match:
       path:
         prefix: /
-name: snakem-app-dev
+name: snakem-app
 region: nyc
 services:
 - dockerfile_path: Dockerfile
