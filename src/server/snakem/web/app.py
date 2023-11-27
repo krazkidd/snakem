@@ -19,10 +19,6 @@ app.add_middleware(
 app.include_router(api.router)
 app.include_router(ws.router)
 
-# because this is a static site, we can easily
-# arrange for it to be hosted anywhere
-#app.mount("/", StaticFiles(directory="web/", html=True), name="web")
-
 if __name__ == '__main__':
     import uvicorn
 
