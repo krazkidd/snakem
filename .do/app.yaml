@@ -30,7 +30,7 @@ ingress:
 name: snakem-app
 region: nyc
 services:
-- dockerfile_path: Dockerfile
+- dockerfile_path: /src/server/Dockerfile
   github:
     branch: master
     deploy_on_push: true
