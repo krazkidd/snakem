@@ -41,7 +41,7 @@ services:
   instance_count: 1
   instance_size_slug: basic-xxs
   name: server
-  source_dir: /src/server/
+  source_dir: /src/server
 static_sites:
 - build_command: npm run build
   environment_slug: python
@@ -51,4 +51,4 @@ static_sites:
     repo: krazkidd/snakem
   name: web
   output_dir: dist
-  source_dir: /src/web/
+  source_dir: /src/web
