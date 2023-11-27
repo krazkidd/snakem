@@ -7,7 +7,7 @@ import vue from '@vitejs/plugin-vue'
 export default defineConfig(({ command, mode, isSsrBuild, isPreview }) => {
   return {
     define: {
-      __SERVER_URL__: command === 'serve' ? JSON.stringify('http://localhost:9000') : null,
+      __SERVER_URL__: command === 'serve' ? JSON.stringify('http://localhost:9000') : '',
     },
     plugins: [vue()],
     resolve: {
