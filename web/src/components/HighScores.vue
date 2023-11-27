@@ -3,7 +3,7 @@
 
   import { useFetch } from '../composables/fetch.js'
 
-  const { data, error } = useFetch('/api/highscores');
+  const { data, error } = useFetch(__SERVER_URL__ + '/api/highscores');
 </script>
 
 <template>
