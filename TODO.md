@@ -90,9 +90,42 @@
   - or try vs core remote?
 
 - are these conflicting with each other? the prettier status is read and prettification doesnt seem to be working
+
   - "devDependencies": {
     "@vue/eslint-config-prettier": "^7.1.0",
     "eslint": "^8.39.0",
     "eslint-plugin-vue": "^9.11.0",
     "prettier": "^2.8.8",
     }
+
+- better config managment
+
+  - python config with environment override at DuckDuckGo
+    https://duckduckgo.com/?t=ftsa&q=python+config+with+environment+override&atb=v337-1&ia=web
+
+  - Which is the best way to allow configuration options be overridden at the command line in Python? - Stack Overflow
+    https://stackoverflow.com/questions/3609852/which-is-the-best-way-to-allow-configuration-options-be-overridden-at-the-comman
+
+  - bw2/ConfigArgParse: A drop-in replacement for argparse that allows options to also be set via config files and/or environment variables.
+    https://github.com/bw2/ConfigArgParse
+
+  - ConfigArgParse · PyPI
+    https://pypi.org/project/ConfigArgParse/
+
+  - configparser — Configuration file parser — Python 3.11.3 documentation
+    https://docs.python.org/3/library/configparser.html
+
+  - configparser — Configuration file parser — Python 3.11.3 documentation
+    https://docs.python.org/3/library/configparser.html#configparser.ConfigParser
+
+  - How to override python configuration with environment variables - Stack Overflow
+    https://stackoverflow.com/questions/57178901/how-to-override-python-configuration-with-environment-variables
+
+- should we create a package? we would need one to distribute to PyPi
+
+review these FastAPI docs
+- https://github.com/guybedford/es-module-shims#import-maps
+- https://fastapi.tiangolo.com/tutorial/response-model/
+- https://fastapi.tiangolo.com/advanced/response-directly/
+- https://fastapi.tiangolo.com/advanced/additional-responses/
+- https://testdriven.io/blog/developing-a-single-page-app-with-fastapi-and-vuejs/
