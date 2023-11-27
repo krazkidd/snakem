@@ -3,9 +3,9 @@ alerts:
 - rule: DOMAIN_FAILED
 - rule: DEPLOYMENT_LIVE
 domains:
-- domain: snakem.app.xericode.dev
+- domain: snakem.app.xericode.net
   type: PRIMARY
-  zone: app.xericode.dev
+  zone: app.xericode.net
 features:
 - buildpack-stack=ubuntu-22
 ingress:
