@@ -1,12 +1,55 @@
 spec:
-  name: snakem-app-dev
+  alerts:
+  - rule: DEPLOYMENT_FAILED
+  - rule: DOMAIN_FAILED
+  - rule: DEPLOYMENT_LIVE
+  domains:
+  - domain: snakem.app.xericode.net
+    type: PRIMARY
+    zone: app.xericode.net
+  features:
+  - buildpack-stack=ubuntu-22
+  ingress:
+    rules:
+    - component:
+        name: web
+      match:
+        path:
+          prefix: /
+    - component:
+        name: server
+        preserve_path_prefix: true
+      match:
+        path:
+          prefix: /api
+    - component:
+        name: server
+        preserve_path_prefix: true
+      match:
+        path:
+          prefix: /ws
+  name: snakem-app
+  region: nyc
   services:
-    - dockerfile_path: Dockerfile
-      git:
-        branch: master
-        repo_clone_url: https://github.com/krazkidd/snakem.git
-      health_check:
-        http_path: /api/health
-      http_port: 9000
-      name: snakem-server
-      source_dir: /
+  - dockerfile_path: /src/server/Dockerfile
+    github:
+      branch: master
+      deploy_on_push: true
+      repo: krazkidd/snakem
+    health_check:
+      http_path: /api/health
+    http_port: 9000
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    name: server
+    source_dir: /src/server
+  static_sites:
+  - build_command: npm run build
+    environment_slug: python
+    github:
+      branch: master
+      deploy_on_push: true
+      repo: krazkidd/snakem
+    name: web
+    output_dir: dist
+    source_dir: /src/web
