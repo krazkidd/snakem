@@ -42,6 +42,10 @@ License: GPLv3 (see LICENSE.md file)
 
 1. Run `$ python3 -m snakem.net.client` to start the client.
 
+### Starting the web app:
+
+1. Run `$ npm run dev` to start the web app in dev mode.
+
 ### Debugging:
 
 1. Install VS Code and the recommended extensions (see `.vscode/extensions.json`).
