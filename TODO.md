@@ -3,9 +3,11 @@
 - arrange config files to make use of built-in config supported
   https://docs.python.org/3/library/configparser.html
 
-- fix project structure (i.e. do we need a src folder? how to debug/package/deploy?)
-
 - DeprecationWarning: the imp module is deprecated in favour of importlib and slated for removal in Python 3.12; see the module's documentation for alternative uses
+
+- fix CORS config (shouldn't allow '*' when deployed)
+- server and web url configs need to be hoisted all the way up
+  (so we can change during dev and deployment, with envvars or command line args)
 
 - allow server to be FQDN (or "localhost"); need to save resolved IP address; use "localhost" in client config; use "0.0.0.0" as bind address in server config?
 
