@@ -1,4 +1,3 @@
-from starlette.staticfiles import StaticFiles
 from fastapi import FastAPI
 
 from .routers import api, ws
