@@ -31,13 +31,23 @@ spec:
   name: snakem-app
   region: nyc
   services:
-  - dockerfile_path: /src/server/Dockerfile
+  - alerts:
+    - operator: GREATER_THAN
+      rule: CPU_UTILIZATION
+      value: 50
+      window: FIVE_MINUTES
+    - operator: GREATER_THAN
+      rule: MEM_UTILIZATION
+      value: 50
+      window: FIVE_MINUTES
+    dockerfile_path: /src/server/Dockerfile
     github:
       branch: master
       deploy_on_push: true
       repo: krazkidd/snakem
     health_check:
       http_path: /api/health
+      period_seconds: 120
     http_port: 9000
     instance_count: 1
     instance_size_slug: basic-xxs
