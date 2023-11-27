@@ -1,23 +1,4 @@
-FROM node:latest AS build-vue
-
-# Install node requirements
-COPY web/package.json web/package-lock.json ./
-RUN npm install
-
-WORKDIR /build
-COPY web /build
-
-# Creates a non-root user with an explicit UID and adds permission to access the /build folder
-# For more info, please refer to https://aka.ms/vscode-docker-python-configure-containers
-RUN adduser -u 5678 --disabled-password --gecos "" builduser && chown -R builduser /build
-USER builduser
-
-RUN npm run build
-
-#######################################################################
-#######################################################################
-
-FROM python:3-slim AS server
+FROM python:3-slim
 
 # Keeps Python from generating .pyc files in the container
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -31,7 +12,6 @@ RUN python -m pip install --no-cache-dir -r requirements.txt
 
 WORKDIR /app
 COPY snakem /app/snakem
-COPY --from=build-vue /build/dist /app/web
 
 # Creates a non-root user with an explicit UID and adds permission to access the /app folder
 # For more info, please refer to https://aka.ms/vscode-docker-python-configure-containers
