@@ -26,6 +26,7 @@
   -- or show better messages and show keybinds (e.g. remind player to request to join the game)
 
 - add chat system
+  - this can be done in frontend with firebase
 
 - read up on debugging containerized app
   https://docs.docker.com/engine/security/rootless/#install
@@ -72,6 +73,7 @@
 - fix server debug launch
 
 - client/server should only sleep long enough to advance the game when in game mode
+  - instead of a fixed sleep duration, we need a fixed *step* for more determinism (i.e. we need to account for the time it tacks to update the game state)
 
 - client/server should sync on real time and not just game tick
 
