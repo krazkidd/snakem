@@ -3,8 +3,6 @@
 - arrange config files to make use of built-in config supported
   https://docs.python.org/3/library/configparser.html
 
-- fix project structure (i.e. do we need a src folder? how to debug/package/deploy?)
-
 - DeprecationWarning: the imp module is deprecated in favour of importlib and slated for removal in Python 3.12; see the module's documentation for alternative uses
 
 - fix CORS config (shouldn't allow '*' when deployed)
