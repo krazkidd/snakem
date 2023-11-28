@@ -87,7 +87,7 @@ To get the container IP address and port, run
 $ sudo docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' snakem
 ```
 
-### Starting the client:
+### Starting the client
 
 First ensure `SERVER_HOST` in `src/server/snakem/config/client.py` has the right server IP address and port.
 
@@ -117,8 +117,12 @@ $ npm run dev
    - **snakem server (local)**
    - **snakem client (local)**
 
-### Deploy your own (DigitalOcean)
+## Deploy your own (DigitalOcean)
 
 This repository provides a configuration template for DigitalOcean's App Platform. You can launch your own Snake-M server in the cloud in a couple of clicks with the button below.
 
 [![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/krazkidd/snakem/tree/master&refcode=b9ac212b7d29)
+
+## Attributions
+
+The snake favicon (`src/web/public/favicon/favicon.ico` and accompanying files) and other emojis are used under the [CC-BY 4.0](https://creativecommons.org/licenses/by/4.0/) license from the [twemoji](https://github.com/twitter/twemoji) project.
