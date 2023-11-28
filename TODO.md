@@ -1,5 +1,8 @@
 # TODO.md
 
+- fix menu on small screens!
+  what does bootstrapvuenext recommend?
+  
 - arrange config files to make use of built-in config supported
   https://docs.python.org/3/library/configparser.html
 
