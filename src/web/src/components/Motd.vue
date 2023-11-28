@@ -1,9 +1,10 @@
 <script lang="ts" setup>
+  import { useFetch } from '@vueuse/core';
+
   import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
-  import { useFetch } from '../composables/fetch.js'
 
-  const { data, error } = useFetch(__SERVER_URL__ + '/api/motd');
+  const { data, error } = useFetch(__SERVER_URL__ + '/api/motd').json();
 </script>
 
 <template>
@@ -12,7 +13,7 @@
     Message of the Day
   </div>
 
-  <div v-if="error">Oops! Error encountered: {{ error.message }}</div>
+  <div v-if="error">Oops! Error encountered: {{ error }}</div>
   <div v-else-if="data">
     {{ data }}
   </div>

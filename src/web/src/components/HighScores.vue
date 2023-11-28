@@ -1,9 +1,9 @@
 <script lang="ts" setup>
+  import { useFetch } from '@vueuse/core';
+
   import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
-  import { useFetch } from '../composables/fetch.js'
-
-  const { data, error } = useFetch(__SERVER_URL__ + '/api/highscores');
+  const { data, error } = useFetch(__SERVER_URL__ + '/api/highscores').json();
 </script>
 
 <template>
@@ -12,7 +12,7 @@
     High Scores
   </div>
 
-  <div v-if="error">Oops! Error encountered: {{ error.message }}</div>
+  <div v-if="error">Oops! Error encountered: {{ error }}</div>
   <div v-else-if="data">
     <ol class="fa-ul">
       <li v-for="highScoreItem of data">
