@@ -6,9 +6,6 @@
 - arrange config files to make use of built-in config supported
   https://docs.python.org/3/library/configparser.html
 
-- ignore or add components.d.ts?
-  https://github.com/unplugin/unplugin-vue-components#typescript
-
 - DeprecationWarning: the imp module is deprecated in favour of importlib and slated for removal in Python 3.12; see the module's documentation for alternative uses
 
 - fix CORS config (shouldn't allow '*' when deployed)
