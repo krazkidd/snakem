@@ -4,7 +4,10 @@ import 'bootstrap-vue-next/dist/bootstrap-vue-next.css';
 import './assets/main.css'
 
 import { createApp } from 'vue'
+//import { createPinia } from 'pinia'
+
 import App from './App.vue'
+import router from './router'
 
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faRankingStar, faTrophy, faMedal, faNewspaper } from '@fortawesome/free-solid-svg-icons'
@@ -17,5 +20,8 @@ app.config.errorHandler = (err) => {
 }
 
 library.add(faRankingStar, faTrophy, faMedal, faNewspaper)
+
+//app.use(createPinia())
+app.use(router)
 
 app.mount('#app')
