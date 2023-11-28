@@ -5,7 +5,7 @@ import { RouterLink, RouterView } from 'vue-router';
 <template>
   <header>
     <nav class="navbar navbar-expand-md navbar-dark bg-dark px-2">
-      <a class="navbar-brand" href="#">Snake-M</a>
+      <RouterLink class="navbar-brand" to="/">Snake-M</RouterLink>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
