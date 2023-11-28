@@ -1,4 +1,4 @@
-<script setup>
+<script lang="ts" setup>
   import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
   import { useFetch } from '../composables/fetch.js'
