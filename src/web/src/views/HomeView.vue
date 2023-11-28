@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import Motd from '../components/Motd.vue'
+  import MessageOfTheDay from '../components/MessageOfTheDay.vue'
   import HighScores from '../components/HighScores.vue'
 </script>
 
@@ -10,7 +10,7 @@
     </div>
 
     <div class="col">
-      <Motd />
+      <MessageOfTheDay />
 
       <HighScores />
     </div>

@@ -3,7 +3,6 @@
 
   import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
-
   const { data, error } = useFetch(__SERVER_URL__ + '/api/motd').json();
 </script>
 
