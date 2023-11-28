@@ -7,13 +7,13 @@
 </script>
 
 <template>
-  <div class="alert alert-info" role="alert">
+  <div class="alert alert-info p-1 m-1" role="alert">
     <font-awesome-icon :icon="['fas', 'newspaper']" />
     Message of the Day
   </div>
 
-  <div v-if="data">
-    {{ data }}
+  <div v-if="data" class="p-1">
+    <h5>{{ data }}</h5>
   </div>
   <div v-else-if="error">Oops! Error encountered: {{ error }}</div>
   <div v-else>Loading...</div>
