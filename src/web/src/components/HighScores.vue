@@ -14,8 +14,7 @@
     High Scores
   </div>
 
-  <div v-if="error">Oops! Error encountered: {{ error }}</div>
-  <div v-else-if="data">
+  <div v-if="data">
     <ol class="fa-ul">
       <li v-for="highScoreItem of (data as HighScoreItem[])" :key="highScoreItem.rank">
         <span v-if="highScoreItem.rank <= 3" class="fa-li" :data-rank="highScoreItem.rank"><font-awesome-icon :icon="['fas', 'trophy']" /></span>
@@ -25,6 +24,7 @@
       </li>
     </ol>
   </div>
+  <div v-else-if="error">Oops! Error encountered: {{ error }}</div>
   <div v-else>Loading...</div>
 </template>
 
