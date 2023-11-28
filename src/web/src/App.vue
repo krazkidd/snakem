@@ -11,8 +11,11 @@ import { RouterLink, RouterView } from 'vue-router';
       </button>
       <div class="collapse navbar-collapse" id="navbarCollapse">
         <ul class="navbar-nav mr-auto">
-          <li class="nav-item active">
-            <RouterLink class="nav-link" to="/">Home</RouterLink>
+          <li class="nav-item">
+            <RouterLink class="nav-link" to="/" activeClass="active">Home</RouterLink>
+          </li>
+          <li class="nav-item">
+            <RouterLink class="nav-link" to="/about" activeClass="active">About</RouterLink>
           </li>
         </ul>
       </div>
