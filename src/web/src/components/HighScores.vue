@@ -5,16 +5,25 @@
 
   import { type HighScoreItem } from '../types/api';
 
-  const { data, error } = useFetch(__SERVER_URL__ + '/api/highscores').json();
+  const { execute, data, error } = useFetch(__SERVER_URL__ + '/api/highscores').json();
+
+  function handleRefreshClick() {
+    execute();
+  }
 </script>
 
 <template>
-  <div class="alert alert-info" role="alert">
-    <font-awesome-icon :icon="['fas', 'ranking-star']" />
-    High Scores
+  <div class="alert alert-info d-flex justify-content-between p-1 m-1" role="alert">
+    <div class="align-self-center">
+      <font-awesome-icon :icon="['fas', 'ranking-star']" />
+      High Scores
+    </div>
+    <button type="button" class="btn btn-outline-secondary btn-sm" :onclick="handleRefreshClick">
+      <font-awesome-icon :icon="['fas', 'rotate']" />
+    </button>
   </div>
 
-  <div v-if="data">
+  <div v-if="data" class="p-1">
     <ol class="fa-ul">
       <li v-for="highScoreItem of (data as HighScoreItem[])" :key="highScoreItem.rank">
         <span v-if="highScoreItem.rank <= 3" class="fa-li" :data-rank="highScoreItem.rank"><font-awesome-icon :icon="['fas', 'trophy']" /></span>
