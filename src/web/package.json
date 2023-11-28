@@ -7,6 +7,7 @@
   },
   "scripts": {
     "dev": "vite",
+    "build:digitalocean": "npm install --production=false && npm run build && npm ci",
     "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
     "build-only": "vite build",
