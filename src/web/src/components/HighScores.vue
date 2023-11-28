@@ -3,6 +3,8 @@
 
   import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
+  import { type HighScoreItem } from '../types/api';
+
   const { data, error } = useFetch(__SERVER_URL__ + '/api/highscores').json();
 </script>
 
@@ -15,7 +17,7 @@
   <div v-if="error">Oops! Error encountered: {{ error }}</div>
   <div v-else-if="data">
     <ol class="fa-ul">
-      <li v-for="highScoreItem of data">
+      <li v-for="highScoreItem of (data as HighScoreItem[])" :key="highScoreItem.rank">
         <span v-if="highScoreItem.rank <= 3" class="fa-li" :data-rank="highScoreItem.rank"><font-awesome-icon :icon="['fas', 'trophy']" /></span>
         <span v-else class="fa-li" :data-rank="highScoreItem.rank"><font-awesome-icon :icon="['fas', 'medal']" /></span>
         <strong>{{ highScoreItem.score }}</strong>
