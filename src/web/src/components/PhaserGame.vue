@@ -11,7 +11,7 @@
     startGame: false
   });
 
-  let game = shallowRef<Game | null>(null);
+  let game = shallowRef<Game>();
 
   watchPostEffect(() => {
     if (props.startGame) {
