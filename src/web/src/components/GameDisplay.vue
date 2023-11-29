@@ -1,36 +1,51 @@
 <script setup lang="ts">
-    import { onMounted } from 'vue';
+    import { shallowRef } from 'vue';
 
     import { Game } from 'phaser';
 
     import Demo from '../scenes/Demo';
 
-    let game;
+    let game = shallowRef<Game | null>(null);
 
-    onMounted(() => {
-        game = new Game({
-            width: "100%",
-            height: "100%",
-            type: Phaser.AUTO,
-            disablePreFX: true,
-            disablePostFX: true,
-            parent: 'game',
-            audio: {
-                disableWebAudio: true
-            },
-            physics: {
-                default: 'arcade',
-                arcade: {
-                    fps: 60,
-                    gravity: {y : 0},
-                }
-            },
-            scene: Demo
-        });
-    });
+    function handleClick() {
+        if (!game.value) {
+            game.value = new Game({
+                type: Phaser.AUTO,
+                //disableContextMenu: true,
+                disablePreFX: true,
+                disablePostFX: true,
+                failIfMajorPerformanceCaveat: true,
+                //loaderAsync: true,
+                //callbacks: {
+                //    preBoot: (game) => { },
+                //    postBoot: (game) => { }
+                //},
+                audio: {
+                    disableWebAudio: true
+                },
+                physics: {
+                    default: 'arcade',
+                    arcade: {
+                        fps: 60,
+                        gravity: {y : 0},
+                    }
+                },
+                scale: {
+                    autoCenter: Phaser.Scale.CENTER_BOTH,
+                    mode: Phaser.Scale.FIT,
+                    parent: 'phaser-game',
+                    //expandParent: true,
+                    width: 800,
+                    height: 800
+                },
+                scene: Demo
+            });
+        }
+    };
 </script>
 
 <template>
-    <div id="game">
+    <div id="phaser-game">
+        <button v-if="!game" type="button" class="btn btn-primary position-absolute top-50 start-50 translate-middle" :onclick="handleClick">Click to Start</button>
     </div>
 </template>
