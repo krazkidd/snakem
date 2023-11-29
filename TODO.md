@@ -1,6 +1,6 @@
 # TODO.md
 
-- fix menu on small screens!
+- fix menu toggle on small screens!
   what does bootstrapvuenext recommend?
   
 - arrange config files to make use of built-in config supported
@@ -15,6 +15,8 @@
   (so we can change during dev and deployment, with envvars or command line args)
 
 - allow server to be FQDN (or "localhost"); need to save resolved IP address; use "localhost" in client config; use "0.0.0.0" as bind address in server config?
+
+- set up GitHub Pages deployment (which correctly points to the backend)
 
   - See: https://docs.python.org/3/library/socket.html
 
