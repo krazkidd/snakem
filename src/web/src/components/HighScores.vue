@@ -13,12 +13,13 @@
 </script>
 
 <template>
-  <div class="alert alert-info d-flex justify-content-between p-1 m-1" role="alert">
-    <div class="align-self-center">
+  <div class="d-flex justify-content-between mb-0 p-1">
+    <div class="align-self-center text-info fs-5 mb-0">
       <font-awesome-icon :icon="['fas', 'ranking-star']" />
       High Scores
     </div>
-    <button type="button" class="btn btn-outline-secondary btn-sm" :onclick="handleRefreshClick">
+
+    <button type="button" class="btn btn-outline-info btn-sm" @click="handleRefreshClick">
       <font-awesome-icon :icon="['fas', 'rotate']" />
     </button>
   </div>
