@@ -24,13 +24,7 @@ import { RouterLink, RouterView } from 'vue-router';
     </nav>
   </header>
 
-  <main role="main" class="container-fluid mt-2">
+  <main role="main" class="container-fluid h-100 mt-2">
     <RouterView />
   </main>
 </template>
-
-<style>
-main {
-  min-height: 100vh;
-}
-</style>
