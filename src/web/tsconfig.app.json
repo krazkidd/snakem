@@ -8,6 +8,9 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "types": ["Phaser"]
+    "typeRoots": [
+			"./node_modules/phaser/types"
+		],
+    "types": ["phaser"]
   }
 }
