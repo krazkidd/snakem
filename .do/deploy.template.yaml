@@ -47,15 +47,16 @@ spec:
       repo: krazkidd/snakem
     health_check:
       http_path: /api/health
-      period_seconds: 120
+      period_seconds: 30
     http_port: 9000
     instance_count: 1
     instance_size_slug: basic-xxs
     name: server
     source_dir: /src/server
   static_sites:
-  - build_command: npm run build
-    environment_slug: python
+  - build_command: npm run build:digitalocean
+    catchall_document: index.html
+    environment_slug: node-js
     github:
       branch: master
       deploy_on_push: true
