@@ -30,4 +30,7 @@ import { RouterLink, RouterView } from 'vue-router';
 </template>
 
 <style>
+main {
+  min-height: 100vh;
+}
 </style>
