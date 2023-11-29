@@ -12,6 +12,8 @@
             width: "100%",
             height: "100%",
             type: Phaser.AUTO,
+            disablePreFX: true,
+            disablePostFX: true,
             parent: 'game',
             audio: {
                 disableWebAudio: true
