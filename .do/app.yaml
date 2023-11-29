@@ -54,6 +54,7 @@ services:
   source_dir: /src/server
 static_sites:
 - build_command: npm run build:digitalocean
+  catchall_document: index.html
   environment_slug: python
   github:
     branch: master
