@@ -1,5 +1,6 @@
 <script setup lang="ts">
-  import { shallowRef, watchPostEffect } from 'vue';
+  import { shallowRef, watchEffect, watchPostEffect } from 'vue';
+  import { useWebSocket } from '@vueuse/core';
 
   import { Game } from 'phaser';
 
@@ -11,7 +12,18 @@
     startGame: false
   });
 
+  const emit = defineEmits<{
+    (e: "wsMessage", message: string): void;
+  }>();
+
   let game = shallowRef<Game>();
+  let ws = useWebSocket('ws://' + (SERVER_HOST ? SERVER_HOST + ':' + SERVER_PORT : '') + '/ws');
+
+  watchEffect(() => {
+    if (ws.data.value) {
+      emit('wsMessage', ws.data.value);
+    }
+  });
 
   watchPostEffect(() => {
     if (props.startGame) {

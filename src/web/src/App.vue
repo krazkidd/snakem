@@ -2,16 +2,31 @@
 import { ref } from 'vue';
 import { RouterLink, RouterView } from 'vue-router';
 
+import { useToast } from 'bootstrap-vue-next';
+
 import PhaserGame from './components/PhaserGame.vue';
 
+const { show: toast } = useToast();
+
 const gameStarted = ref(false);
+
+function handleWsMessage(msg: string) {
+  toast(msg, {
+    title: 'WebSocket Message Received',
+    variant: 'info',
+    pos: 'bottom-right',
+    //value: true,
+    //interval: 100,
+    delay: 1000
+  });
+}
 </script>
 
 <template>
   <main role="main" class="h-100">
     <div class="row h-100">
       <div class="col-12 col-sm-4 col-md-6 col-lg-8 h-100">
-        <PhaserGame :startGame="gameStarted" />
+        <PhaserGame :startGame="gameStarted" @wsMessage="handleWsMessage($event)" />
       </div>
 
       <div class="col">
@@ -45,6 +60,8 @@ const gameStarted = ref(false);
         </div>
 
         <RouterView />
+
+        <BToaster />
       </div>
     </div>
   </main>

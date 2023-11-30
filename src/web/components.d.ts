@@ -7,6 +7,7 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
+    BToaster: typeof import('bootstrap-vue-next')['BToaster']
     HighScores: typeof import('./src/components/HighScores.vue')['default']
     MessageOfTheDay: typeof import('./src/components/MessageOfTheDay.vue')['default']
     PhaserGame: typeof import('./src/components/PhaserGame.vue')['default']
