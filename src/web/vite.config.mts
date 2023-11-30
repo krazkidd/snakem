@@ -9,7 +9,8 @@ import {BootstrapVueNextResolver} from 'unplugin-vue-components/resolvers'
 export default defineConfig(({ command }) => {
   return {
     define: {
-      __SERVER_URL__: JSON.stringify(command === 'serve' ? 'http://localhost:9000' : ''),
+      SERVER_HOST: JSON.stringify(command === 'serve' ? 'localhost' : ''),
+      SERVER_PORT: JSON.stringify(command === 'serve' ? 9000 : 80)
     },
     plugins: [
       vue(),
