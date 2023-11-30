@@ -27,9 +27,7 @@
 
   watchPostEffect(() => {
     if (props.startGame) {
-      if (game.value) {
-        game.value.destroy(true);
-      }
+      game.value?.destroy(true);
 
       game.value = createGame();
     } else if (game.value) {
