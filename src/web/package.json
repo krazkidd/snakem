@@ -7,8 +7,8 @@
   },
   "scripts": {
     "dev": "vite",
-    "build:digitalocean": "npm install --include=dev && npm run build && npm ci",
     "build": "run-p type-check \"build-only {@}\" --",
+    "build:digitalocean": "npm install --include=dev && npm run build && npm ci",
     "build-only": "vite build",
     "preview": "vite preview",
     "type-check": "vue-tsc --noEmit -p tsconfig.app.json --composite false",
