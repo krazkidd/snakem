@@ -1,43 +1,50 @@
 <script setup lang="ts">
-  import { shallowRef, watchEffect, watchPostEffect } from 'vue';
-  import { useWebSocket } from '@vueuse/core';
+  import { ref, shallowRef, watchEffect } from 'vue';
 
-  import { Game } from 'phaser';
+  import { Game, Scene } from 'phaser';
 
-  import { createGame } from '../game/game';
-
-  const props = withDefaults(defineProps<{
-    startGame?: boolean
-  }>(), {
-    startGame: false
-  });
-
-  const emit = defineEmits<{
-    (e: "wsMessage", message: string): void;
+  const props = defineProps<{
+    startGame: boolean,
+    startingScene: Scene,
   }>();
 
-  let game = shallowRef<Game>();
-  let ws = useWebSocket('ws://' + (SERVER_HOST ? SERVER_HOST + ':' + SERVER_PORT : '') + '/ws');
+  const parent = ref(null);
+  const game = shallowRef<Game>();
 
   watchEffect(() => {
-    if (ws.data.value) {
-      emit('wsMessage', ws.data.value);
-    }
-  });
-
-  watchPostEffect(() => {
-    if (props.startGame) {
+    if (parent.value && props.startGame) {
       game.value?.destroy(true);
 
-      game.value = createGame();
-    } else if (game.value) {
-      game.value.destroy(true);
+      game.value = new Game({
+        type: Phaser.AUTO,
+        //disableContextMenu: true,
+        disablePreFX: true,
+        disablePostFX: true,
+        failIfMajorPerformanceCaveat: true,
+        //loaderAsync: true,
+        //callbacks: {
+        //  preBoot: (game) => { },
+        //  postBoot: (game) => { }
+        //},
+        audio: {
+          disableWebAudio: true
+        },
+        scale: {
+          autoCenter: Phaser.Scale.CENTER_BOTH,
+          mode: Phaser.Scale.FIT,
+          parent: parent.value,
+          expandParent: false,
+          width: 800,
+          height: 800
+        },
+        scene: props.startingScene
+      });
+    } else {
+      game.value?.destroy(true);
     }
   });
 </script>
 
 <template>
-  <div id="phaser-game">
-
-  </div>
+  <div ref="parent" />
 </template>

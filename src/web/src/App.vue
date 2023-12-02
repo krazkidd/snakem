@@ -1,32 +1,44 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watchEffect } from 'vue';
 import { RouterLink, RouterView } from 'vue-router';
 
-import { useToast } from 'bootstrap-vue-next';
+import { useWebSocket } from '@vueuse/core';
 
 import PhaserGame from './components/PhaserGame.vue';
 
-const { show: toast } = useToast();
+import { MsgType } from './game/enums';
+import { sendMessage } from './game/net';
+import type { Message } from './game/net';
+import Snakem from './game/scenes/Snakem';
+
+const ws = useWebSocket<Message>('ws://' + (SERVER_HOST ? SERVER_HOST + ':' + SERVER_PORT : '') + '/ws');
 
 const gameStarted = ref(false);
 
-function handleWsMessage(msg: string) {
-  toast(msg, {
-    title: 'WebSocket Message Received',
-    variant: 'info',
-    pos: 'bottom-right',
-    //value: true,
-    //interval: 100,
-    delay: 1000
-  });
-}
+watchEffect(() => {
+  if (ws.data.value) {
+    //TODO handle message
+
+    if (import.meta.env.DEV) {
+      console.log(ws.data.value);
+    }
+  }
+});
+
+watchEffect(() => {
+  if (gameStarted.value) {
+    //TODO these should wait for user input
+    sendMessage<Message>(ws, MsgType.LOBBY_JOIN);
+    sendMessage<Message>(ws, MsgType.READY);
+  }
+});
 </script>
 
 <template>
   <main role="main" class="h-100">
     <div class="row h-100">
-      <div class="col-12 col-sm-4 col-md-6 col-lg-8 h-100">
-        <PhaserGame :startGame="gameStarted" @wsMessage="handleWsMessage($event)" />
+      <div class="col-12 col-sm-8 col-md-6 col-xl-4 h-100">
+        <PhaserGame :startGame="gameStarted" :startingScene="Snakem" />
       </div>
 
       <div class="col">
