@@ -37,7 +37,11 @@
           width: 800,
           height: 800
         },
-        scene: props.startingScene
+        scene: props.startingScene,
+        fps: {
+          limit: 20,
+          smoothStep: false,
+        }
       });
     } else {
       game.value?.destroy(true);
