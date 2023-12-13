@@ -11,7 +11,7 @@ import { sendMessage } from './game/net';
 import type { Message } from './game/net';
 import Snakem from './game/scenes/Snakem';
 
-const ws = useWebSocket<Message>('ws://' + (SERVER_HOST ? SERVER_HOST + ':' + SERVER_PORT : '') + '/ws');
+const ws = useWebSocket<Message>('ws://' + (SERVER_HOST ? SERVER_HOST + ':' + SERVER_PORT : '') + import.meta.env.BASE_URL + 'ws');
 
 const gameStarted = ref(false);
 

@@ -5,7 +5,7 @@
 
   import { type HighScoreItem } from '../types/api';
 
-  const { execute, data, error } = useFetch('http://' + (SERVER_HOST ? SERVER_HOST + ':' + SERVER_PORT : '') + '/api/highscores').json();
+  const { execute, data, error } = useFetch('http://' + (SERVER_HOST ? SERVER_HOST + ':' + SERVER_PORT : '') + import.meta.env.BASE_URL + 'api/highscores').json();
 
   function handleRefreshClick() {
     execute();
