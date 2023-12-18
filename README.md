@@ -100,7 +100,7 @@ $ python3 -m snakem.net.client
 
 ### Starting the web app
 
-First ensure `__SERVER_URL__` in `src/web/vite.config.js` has the right server IP address.
+First ensure `SERVER_HOST` and `SERVER_PORT` in `src/web/vite.config.js` have the correct server IP address and port.
 
 ```ShellSession
 $ cd src/web

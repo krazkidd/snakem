@@ -1,33 +1,54 @@
 <script setup lang="ts">
-  import { shallowRef, watchPostEffect } from 'vue';
+  import { ref, shallowRef, watchEffect } from 'vue';
 
-  import { Game } from 'phaser';
+  import { Game, Scene } from 'phaser';
 
-  import { createGame } from '../game/game';
+  const props = defineProps<{
+    startGame: boolean,
+    startingScene: Scene,
+  }>();
 
-  const props = withDefaults(defineProps<{
-    startGame?: boolean
-  }>(), {
-    startGame: false
-  });
+  const parent = ref(null);
+  const game = shallowRef<Game>();
 
-  let game = shallowRef<Game | null>(null);
+  watchEffect(() => {
+    if (parent.value && props.startGame) {
+      game.value?.destroy(true);
 
-  watchPostEffect(() => {
-    if (props.startGame) {
-      if (game.value) {
-        game.value.destroy(true);
-      }
-
-      game.value = createGame();
-    } else if (game.value) {
-      game.value.destroy(true);
+      game.value = new Game({
+        type: Phaser.AUTO,
+        //disableContextMenu: true,
+        disablePreFX: true,
+        disablePostFX: true,
+        failIfMajorPerformanceCaveat: true,
+        //loaderAsync: true,
+        //callbacks: {
+        //  preBoot: (game) => { },
+        //  postBoot: (game) => { }
+        //},
+        audio: {
+          disableWebAudio: true
+        },
+        scale: {
+          autoCenter: Phaser.Scale.CENTER_BOTH,
+          mode: Phaser.Scale.FIT,
+          parent: parent.value,
+          expandParent: false,
+          width: 800,
+          height: 800
+        },
+        scene: props.startingScene,
+        fps: {
+          limit: 20,
+          smoothStep: false,
+        }
+      });
+    } else {
+      game.value?.destroy(true);
     }
   });
 </script>
 
 <template>
-  <div id="phaser-game">
-
-  </div>
+  <div ref="parent" />
 </template>
